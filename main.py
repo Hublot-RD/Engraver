@@ -9,7 +9,7 @@ if __name__ == "__main__":
 
     # Define the engraving parameters
     depth = 1.0  # Depth of the cutout
-    angle = 45.0  # Angle of the cut
+    angle = 90.0  # Angle of the cut
 
     # Define the path points (example: a spiral path)
     path_points = [(R*cos(t), R*sin(t), t) for t in range(0, int(L), 1)]
@@ -18,4 +18,4 @@ if __name__ == "__main__":
     output_filename = "cylinder_with_cutout.stp"
 
     # Create the cylinder with a cutout along the path
-    create_engraved_cylinder(R, L, depth, angle, path_points, output_filename)
+    create_engraved_cylinder(R, L, depth, angle, path_points[0:5], output_filename)

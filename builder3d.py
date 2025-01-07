@@ -8,6 +8,8 @@ from OCC.Core.IFSelect import IFSelect_RetDone
 from OCC.Core.TopoDS import TopoDS_Shape, TopoDS_Wire
 from math import cos, sin, tan, radians
 
+import geometry as g
+
 
 def create_cylinder(r: float, l: float) -> TopoDS_Shape:
     """
@@ -106,6 +108,37 @@ def export_to_step(shape: TopoDS_Shape, filename: str) -> None:
     else:
         print("Error: Failed to create STEP file.")
 
+def carve_edge(cylinder: TopoDS_Shape, edge: list[list[float]], depth: float, angle: float) -> TopoDS_Shape:
+    """
+    Carve one edge on the cylinder.
+
+    :param cylinder: Cylinder to carve
+    :param edge: A list of two points defining the path of the carving. Each point is a list [x, y, z].
+    """
+    # Find midpoint of the edge
+    start, end = edge
+    midpoint = g.midpoint(g.cart2cyl(*start), g.cart2cyl(*end))
+    
+
+    # Create the triangle shape
+    triangle_shape = create_triangle(pos_surface=midpoint, depth=depth, angle=angle)
+
+    for _,e in enumerate(edge):
+        # Create the path wire, starting at the midpoint
+        edge_tmp = [g.cyl2cart(*midpoint), e]
+        edge_tmp_wire = create_path(edge_tmp)
+
+        # Extrude the triangle along the path
+        extruded_triangle_shape = extrude_shape_along_path(triangle_shape, edge_tmp_wire)
+
+        # Subtract the extruded triangle from the cylinder
+        cylinder = subtract_shapes(cylinder, extruded_triangle_shape)
+
+    return cylinder
+
+def carve_corner(cylinder: TopoDS_Shape, edge: list[list[float]]) -> TopoDS_Shape:
+    return cylinder
+
 
 def create_engraved_cylinder(R: float, L: float, depth: float, angle: float, path: list[list[float]], filename: str = "my_engraved_cylinder") -> None:
     """
@@ -121,17 +154,11 @@ def create_engraved_cylinder(R: float, L: float, depth: float, angle: float, pat
     # Create the cylinder shape
     cylinder_shape = create_cylinder(R, L)
 
-    # Create the triangle shape
-    triangle_shape = create_triangle(pos_surface=[R, 0, 3], depth=depth, angle=angle)
+    for i in range(len(path) - 1):
+        edge = [path[i], path[i+1]]
 
-    # Create the path wire
-    path_wire = create_path(path[0:3])
-
-    # Extrude the triangle along the path
-    extruded_triangle_shape = extrude_shape_along_path(triangle_shape, path_wire)
-
-    # Subtract the extruded triangle from the cylinder
-    result_shape = subtract_shapes(cylinder_shape, extruded_triangle_shape)
+        cylinder_shape = carve_edge(cylinder_shape, edge, depth, angle)
+        cylinder_shape = carve_corner(cylinder_shape, path[i+1])
 
     # Export the result to a STEP file
-    export_to_step(result_shape, filename)
+    export_to_step(cylinder_shape, filename)
