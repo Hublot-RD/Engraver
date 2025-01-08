@@ -17,7 +17,7 @@ if __name__ == "__main__":
     path_points = [(R-depth, t/pitch*pi, t) for t in linspace(0, L, 200)]
 
     # Define the output STEP file name
-    output_filename = "cylinder_with_cutout.stp"
+    output_filename = "./3d_files/cylinder_with_cutout.stp"
 
     # Create the cylinder with a cutout along the path
     create_engraved_cylinder(R, L, angle, path_points, output_filename)
