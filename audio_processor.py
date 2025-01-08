@@ -1,6 +1,7 @@
 from pydub import AudioSegment
 import numpy as np
 import matplotlib.pyplot as plt
+import scipy.signal as signal
 
 def mp3_to_amplitude_series(mp3_file_path):
     # Load the MP3 file
@@ -22,27 +23,40 @@ def mp3_to_amplitude_series(mp3_file_path):
         audio_data = audio_data.reshape((-1, num_channels))
     
     # Normalize the audio data to voltage values (assuming 16-bit audio)
-    voltage_series = audio_data / (2**(8 * sample_width - 1))
+    voltage_series = np.array(audio_data / (2**(8 * sample_width - 1)))
     
     return voltage_series, frame_rate
 
-def plot_audio_amplitude(voltage_series, frame_rate):
-    # Create a time array in seconds
-    time = np.arange(len(voltage_series)) / frame_rate
-
-    plot_window = int(0.1 * frame_rate) # Plot only first 0.5 second
+def apply_low_pass_filter(voltage_series, frame_rate, cutoff_freq):
+    # Design the low-pass filter
+    nyquist_rate = frame_rate / 2.0
+    normal_cutoff = cutoff_freq / nyquist_rate
+    b, a = signal.butter(5, normal_cutoff, btype='low', analog=False)
     
-    # Plot the amplitude against time
-    plt.figure(figsize=(12, 6))
-    plt.plot(time[:plot_window], voltage_series[:plot_window,0], label='Amplitude')
-    plt.xlabel('Time (seconds)')
-    plt.ylabel('Amplitude')
-    plt.title('Audio Amplitude vs Time')
-    plt.legend()
-    plt.grid()
-    plt.show()
+    # Apply the filter to the voltage series
+    filtered_voltage_series = signal.filtfilt(b, a, voltage_series[:,0])
+
+    return filtered_voltage_series
+    
 
 # Example usage
-mp3_file_path = './audio_files/200Hz.mp3'
+mp3_file_path = './audio_files/michel.mp3'
 voltage_series, frame_rate = mp3_to_amplitude_series(mp3_file_path)
-plot_audio_amplitude(voltage_series, frame_rate)
+voltage_series_7k = apply_low_pass_filter(voltage_series, frame_rate, cutoff_freq=7000)
+voltage_series_3k = apply_low_pass_filter(voltage_series, frame_rate, cutoff_freq=3000)
+
+
+# Plot the amplitude against time
+time = np.arange(len(voltage_series)) / frame_rate
+plot_window = int(10 * frame_rate) # Plot only the first X second
+
+plt.figure(figsize=(12, 6))
+plt.plot(time[10*frame_rate:10*frame_rate+plot_window], voltage_series[10*frame_rate:10*frame_rate+plot_window,0], label='Raw')
+plt.plot(time[10*frame_rate:10*frame_rate+plot_window], voltage_series_7k[10*frame_rate:10*frame_rate+plot_window], label='Filtered 7 kHz')
+plt.plot(time[10*frame_rate:10*frame_rate+plot_window], voltage_series_3k[10*frame_rate:10*frame_rate+plot_window], label='Filtered 3 kHz')
+plt.xlabel('Time (seconds)')
+plt.ylabel('Amplitude')
+plt.title('Audio Amplitude vs Time')
+plt.legend()
+plt.grid()
+plt.show()
