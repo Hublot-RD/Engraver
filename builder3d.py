@@ -7,6 +7,7 @@ from OCC.Core.STEPControl import STEPControl_Writer, STEPControl_AsIs
 from OCC.Core.IFSelect import IFSelect_RetDone
 from OCC.Core.TopoDS import TopoDS_Shape, TopoDS_Wire
 from math import cos, sin, tan, radians
+import numpy as np
 
 import geometry as g
 
@@ -48,16 +49,55 @@ def create_triangle(pos_surface: list[float], depth: float, angle: float) -> Top
     
     return triangle_face
 
+def create_triangle_at_start(tip_path: list[list[float]], angle: float) -> TopoDS_Shape:
+    """
+    Create a triangle at the start of the tip path, with the correct orientation.
+
+    The triangle is coplanar to the z axis. Also, it points towards the center of the cylinder at the middle of the path.
+
+    :param tip_path: List of two points defining the path of the tip. In cylindrical coordinates [R, φ, z]
+    :param angle: Angle of the tip, in degrees.
+    """
+    h = 3 # height of the triangle TODO: make it a parameter
+    dz = h * tan(radians(angle/2))
+
+    start_tip, end_tip = tip_path
+    _, φ, _ = g.midpoint(start_tip, end_tip)
+
+    print(f"φ: {φ}")
+
+    # Define triangle points in carthesion coordinates, after rotation
+    t = np.array(g.cyl2cart(0, 0, 0))
+    bh = np.array(g.cyl2cart(h, φ, dz))
+    bl = np.array(g.cyl2cart(h, φ, -dz))
+
+    # Move the triangle to the start of the tip path
+    start_tip_cart = np.array(g.cyl2cart(*start_tip))
+    t += start_tip_cart
+    bh += start_tip_cart
+    bl += start_tip_cart
+    
+    # Create a face from points of the triangle
+    p1 = gp_Pnt(*t)
+    p2 = gp_Pnt(*bh)
+    p3 = gp_Pnt(*bl)
+    triangle_wire = BRepBuilderAPI_MakePolygon(p1, p2, p3, True).Wire()
+    triangle_face = BRepBuilderAPI_MakeFace(triangle_wire).Face()
+    
+    return triangle_face
+
 def create_path(points: list[list[float]]) -> TopoDS_Wire:
     """
     Create a path wire from a list of points.
 
-    :param points: A list of points defining the path. Each point is a list [x, y, z].
+    :param points: A list of points defining the path. Each point is a list in cylindrical coordinates [R, φ, z].
     :return: The resulting path wire.
     """
     wire_builder = BRepBuilderAPI_MakePolygon()
     for point in points:
-        wire_builder.Add(gp_Pnt(point[0], point[1], point[2]))
+        x, y, z = g.cyl2cart(*point)
+        print(x, y, z)
+        wire_builder.Add(gp_Pnt(x, y, z))
     path_wire = wire_builder.Wire()
     
     return path_wire
@@ -108,31 +148,23 @@ def export_to_step(shape: TopoDS_Shape, filename: str) -> None:
     else:
         print("Error: Failed to create STEP file.")
 
-def carve_edge(cylinder: TopoDS_Shape, edge: list[list[float]], depth: float, angle: float) -> TopoDS_Shape:
+def carve_edge(cylinder: TopoDS_Shape, edge: list[list[float]], angle: float) -> TopoDS_Shape:
     """
     Carve one edge on the cylinder.
 
     :param cylinder: Cylinder to carve
-    :param edge: A list of two points defining the path of the carving. Each point is a list [x, y, z].
+    :param edge: A list of two points defining the path of the carving. Each point is a list in cylindrical coordinates [R, φ, z].
     """
-    # Find midpoint of the edge
-    start, end = edge
-    midpoint = g.midpoint(g.cart2cyl(*start), g.cart2cyl(*end))
-    
-
     # Create the triangle shape
-    triangle_shape = create_triangle(pos_surface=midpoint, depth=depth, angle=angle)
+    triangle_shape = create_triangle_at_start(tip_path=edge, angle=angle)
 
-    for _,e in enumerate(edge):
-        # Create the path wire, starting at the midpoint
-        edge_tmp = [g.cyl2cart(*midpoint), e]
-        edge_tmp_wire = create_path(edge_tmp)
+    edge_wire = create_path(edge)
 
-        # Extrude the triangle along the path
-        extruded_triangle_shape = extrude_shape_along_path(triangle_shape, edge_tmp_wire)
+    # Extrude the triangle along the path
+    extruded_triangle_shape = extrude_shape_along_path(triangle_shape, edge_wire)
 
-        # Subtract the extruded triangle from the cylinder
-        cylinder = subtract_shapes(cylinder, extruded_triangle_shape)
+    # Subtract the extruded triangle from the cylinder
+    cylinder = subtract_shapes(cylinder, extruded_triangle_shape)
 
     return cylinder
 
@@ -140,15 +172,14 @@ def carve_corner(cylinder: TopoDS_Shape, edge: list[list[float]]) -> TopoDS_Shap
     return cylinder
 
 
-def create_engraved_cylinder(R: float, L: float, depth: float, angle: float, path: list[list[float]], filename: str = "my_engraved_cylinder") -> None:
+def create_engraved_cylinder(R: float, L: float, angle: float, path: list[list[float]], filename: str = "my_engraved_cylinder") -> None:
     """
     Create a cylinder with a cutout along a path.
     
     :param R: The radius of the cylinder in mm
     :param L: The length of the cylinder in mm
-    :param depth: The depth of the carving in mm
     :param angle: The angle of the tip of the carving in degrees
-    :param path: A list of points defining the path of the cutout. Each point is a list [x, y, z].
+    :param path: A list of points defining the path of the needle tip in the engraving. Each point is a list [x, y, z].
     :param filename: The name of the output STEP file. Default is 'my_engraved_cylinder.stp'
     """
     # Create the cylinder shape
@@ -156,9 +187,13 @@ def create_engraved_cylinder(R: float, L: float, depth: float, angle: float, pat
 
     for i in range(len(path) - 1):
         edge = [path[i], path[i+1]]
+        print(f"Carving edge {i+1}: {edge},\t{g.distance_cyl(edge[0], edge[1])}")
 
-        cylinder_shape = carve_edge(cylinder_shape, edge, depth, angle)
+        cylinder_shape = carve_edge(cylinder_shape, edge, angle)
         cylinder_shape = carve_corner(cylinder_shape, path[i+1])
+
+    # # Create the path wire
+    # path_wire = create_path(path)
 
     # Export the result to a STEP file
     export_to_step(cylinder_shape, filename)
