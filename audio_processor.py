@@ -92,10 +92,11 @@ def export_to_mp3(amplitude_series: np.ndarray, frame_rate: float, sample_width:
     # Export the AudioSegment to an MP3 file
     audio_segment.export(output_file_path, format="mp3")
     
+
+# Example usage
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
 
-    # Example usage
     path = './audio_files/'
     input_file = 'michel.mp3'
     cutoff_freq = 5000 # Hz

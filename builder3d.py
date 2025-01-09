@@ -228,3 +228,46 @@ def create_engraved_cylinder(R: float, L: float, angle: float, tip_path: list[tu
 
     # Export the result to a STEP file
     export_to_step(cylinder_shape, filename)
+
+def create_tip_path_wire(tip_path: list[tuple[float, float, float]], filename: str = "my_tip_path") -> None:
+    """
+    Create a wire following the path and export it as an STEP file.
+
+    :param tip_path: A list of points defining the path of the needle tip in the engraving. Each point is a tuple in cylindrical coordinates [R, φ, z].
+    :param filename: The name of the output STEP file. Default is 'my_engraved_cylinder.stp'
+    """
+    # Create a wire from the given points
+    wire_builder = BRepBuilderAPI_MakePolygon()
+    for point in tip_path:
+        point = g.cyl2cart(*point)
+        wire_builder.Add(gp_Pnt(*point))
+    wire = wire_builder.Wire()
+    
+    # Export the result to a STEP file
+    export_to_step(wire, filename)
+
+
+# Example usage
+if __name__ == "__main__":
+    from math import pi
+    from numpy import linspace
+    
+    # Define the cylinder parameters
+    R = 27.0  # Radius
+    L = 120.0  # Length
+
+    # Define the engraving parameters
+    depth = 1.0  # Depth of the cut [mm]
+    angle = 90.0  # Angle of the cut
+    pitch = 5 # Pitch of the spiral [mm]
+
+    # Define the path points (example: a spiral path)
+    path_points = [(R-depth, t/pitch*pi, t) for t in linspace(0, L, 200)]
+
+    # Create the cylinder with a cutout along the path
+    output_filename = "./3d_files/engraved_cylinder.stp"
+    create_engraved_cylinder(R, L, angle, path_points, output_filename)
+
+    # Create a wire of the same path
+    output_filename = "./3d_files/tip_path.stp"
+    create_tip_path_wire(path_points, output_filename)
