@@ -17,13 +17,13 @@ for i,amp in enumerate(amplitudes):
     if i > start_idx:
         radius = p.R-p.depth
         phase = (i-start_idx) * p.speed/frame_rate
-        elevation = phase * p.pitch/(2*pi) + amp * p.max_amplitude
-        if elevation <= p.L:
+        elevation = phase*p.pitch/(2*pi) + amp*p.max_amplitude + p.end_margin
+        if elevation <= p.L - p.end_margin:
             path_points.append((radius, phase, elevation))
         else:
             print(f"Stopped by end of cylinder at index {i}/{len(amplitudes)} (engraved {round((i-start_idx)/len(amplitudes),3)} %).")
             break
 
 # Create the engraved cylinder and wire
-# create_engraved_cylinder(p.R, p.L, p.angle, path_points, p.output_folder+p.output_filename)
-create_tip_path_wire(tip_path=path_points, filename=p.output_folder+p.output_filename)
+create_engraved_cylinder(p.R, p.L, p.angle, path_points, p.output_folder+p.output_filename)
+# create_tip_path_wire(tip_path=path_points, filename=p.output_folder+p.output_filename)

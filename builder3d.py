@@ -257,12 +257,12 @@ if __name__ == "__main__":
     L = 120.0  # Length
 
     # Define the engraving parameters
-    depth = 1.0  # Depth of the cut [mm]
+    depth = 0.2  # Depth of the cut [mm]
     angle = 90.0  # Angle of the cut
-    pitch = 5 # Pitch of the spiral [mm]
+    pitch = 3 # Pitch of the spiral [mm]
 
     # Define the path points (example: a spiral path)
-    path_points = [(R-depth, t/pitch*pi, t) for t in linspace(0, L, 200)]
+    path_points = [(R-depth, t/pitch*pi, t) for t in linspace(0, L, 500)]
 
     # Create the cylinder with a cutout along the path
     output_filename = "./3d_files/engraved_cylinder.stp"
