@@ -93,34 +93,6 @@ def create_triangle_for_corner(tip_path: list[tuple[float, float, float]], angle
     
     return triangle_face
 
-# def create_path(points: list[tuple[float, float, float]]) -> TopoDS_Wire:
-#     """
-#     Create a path wire from a list of points.
-
-#     :param points: A list of points defining the path. Each point is a tuple in cylindrical coordinates [R, φ, z].
-#     :return: The resulting path wire.
-#     """
-#     wire_builder = BRepBuilderAPI_MakePolygon()
-#     for point in points:
-#         x, y, z = g.cyl2cart(*point)
-#         wire_builder.Add(gp_Pnt(x, y, z))
-#     path_wire = wire_builder.Wire()
-    
-#     return path_wire
-
-# def extrude_shape_along_path(shape, path_wire: TopoDS_Wire) -> TopoDS_Shape:
-#     """
-#     Extrude a shape along a path.
-
-#     :param shape: The shape to extrude.
-#     :param path_wire: The path along which to extrude the shape.
-#     :return: The resulting shape after extrusion.
-#     """
-#     pipe_maker = BRepOffsetAPI_MakePipe(path_wire, shape)
-#     extruded_shape = pipe_maker.Shape()
-    
-#     return extruded_shape
-
 def subtract_shapes(shape1, shape2) -> TopoDS_Shape:
     """
     Subtract shape2 from shape1.
@@ -132,7 +104,7 @@ def subtract_shapes(shape1, shape2) -> TopoDS_Shape:
     cut_shape = BRepAlgoAPI_Cut(shape1, shape2).Shape()
     return cut_shape
 
-def export_to_step(shape: TopoDS_Shape, filename: str) -> None:
+def export_shape_to_step(shape: TopoDS_Shape, filename: str) -> None:
     """
     Export a shape as an STL file.
 
@@ -153,6 +125,23 @@ def export_to_step(shape: TopoDS_Shape, filename: str) -> None:
         print(f"STEP file '{filename}' created successfully.")
     else:
         print("Error: Failed to create STEP file.")
+
+def export_path_to_csv(path: list[tuple[float, float, float]], filename: str) -> None:
+    """
+    Export a path as a CSV file in cartesian coordinates.
+
+    :param path: The path to export.
+    :param filename: Filename for the CSV file. Can include .csv or not.
+    """
+    if filename.endswith(".csv") is False:
+        filename += ".csv"
+    
+    with open(filename, "w") as file:
+        # file.write("x, y, z\n")
+        for point in path:
+            x, y, z = g.cyl2cart(*point)
+            file.write(f"{x/1000}, {y/1000}, {z/1000}\n")
+    print(f"CSV file '{filename}' created successfully.")
 
 def carve_edge(cylinder: TopoDS_Shape, tip_path: list[tuple[float, float, float]], angle: float) -> TopoDS_Shape:
     """
@@ -227,7 +216,7 @@ def create_engraved_cylinder(R: float, L: float, angle: float, tip_path: list[tu
     cylinder_shape = carve_edge(cylinder_shape, [tip_path[-2], tip_path[-1]], angle)
 
     # Export the result to a STEP file
-    export_to_step(cylinder_shape, filename)
+    export_shape_to_step(cylinder_shape, filename)
 
 def create_tip_path_wire(tip_path: list[tuple[float, float, float]], filename: str = "my_tip_path") -> None:
     """
@@ -244,7 +233,7 @@ def create_tip_path_wire(tip_path: list[tuple[float, float, float]], filename: s
     wire = wire_builder.Wire()
     
     # Export the result to a STEP file
-    export_to_step(wire, filename)
+    export_shape_to_step(wire, filename)
 
 
 # Example usage
@@ -260,9 +249,14 @@ if __name__ == "__main__":
     depth = 0.2  # Depth of the cut [mm]
     angle = 90.0  # Angle of the cut
     pitch = 3 # Pitch of the spiral [mm]
+    end_margin = 5 # Non engraved margin at each end of the cylinder
 
     # Define the path points (example: a spiral path)
-    path_points = [(R-depth, t/pitch*pi, t) for t in linspace(0, L, 500)]
+    path_points = [(R-depth, t/pitch*pi, t+end_margin) for t in linspace(0, L-2*end_margin, 100)]
+
+    # Create the csv file with the path point coordinates
+    output_filename = "./3d_files/path_tip.csv"
+    export_path_to_csv(path_points, output_filename)
 
     # Create the cylinder with a cutout along the path
     output_filename = "./3d_files/engraved_cylinder.stp"

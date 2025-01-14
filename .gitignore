@@ -177,6 +177,8 @@ cython_debug/
 # 3D object files
 *.stp
 *.step
+*.SLDPRT
+*.csv
 
 # Specific folders
 audio_files/filtered/

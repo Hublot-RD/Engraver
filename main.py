@@ -1,5 +1,5 @@
 from math import pi
-from builder3d import create_engraved_cylinder, create_tip_path_wire
+from builder3d import create_engraved_cylinder, create_tip_path_wire, export_path_to_csv
 from audio_processor import mp3_to_amplitude_series, apply_low_pass_filter
 import parameters as p
 
@@ -25,5 +25,6 @@ for i,amp in enumerate(amplitudes):
             break
 
 # Create the engraved cylinder and wire
-create_engraved_cylinder(p.R, p.L, p.angle, path_points, p.output_folder+p.output_filename)
+# create_engraved_cylinder(p.R, p.L, p.angle, path_points, p.output_folder+p.output_filename)
 # create_tip_path_wire(tip_path=path_points, filename=p.output_folder+p.output_filename)
+export_path_to_csv(path_points, p.output_folder+p.output_filename)
