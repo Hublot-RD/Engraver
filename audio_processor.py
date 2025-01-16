@@ -1,13 +1,16 @@
 from pydub import AudioSegment
 import numpy as np
 import scipy.signal as signal
+import warnings
 
-def mp3_to_amplitude_series(mp3_file_path: str, channels: str='left') -> tuple[np.ndarray, float, float, int]:
+def mp3_to_amplitude_series(mp3_file_path: str, channels: str='left', start_time: float = 0.0, duration: float = 1e9) -> tuple[np.ndarray, float, float, int]:
     """
     Load an MP3 file and convert it to a numpy array of amplitude values.
     
     :param mp3_file_path: The path to the MP3 file.
     :param channels: The channel to extract from the audio file. Default is 'left'. ['left', 'right', 'both']
+    :param start_time: How many seconds to crop from the start of the audio. Default is 0
+    :param duration: Duration of the audio signal, in seconds. Default is 1e9
     :return: A numpy array of amplitude values, the frame rate, sample width, and number of channels.
     """
     # Load the MP3 file
@@ -27,6 +30,17 @@ def mp3_to_amplitude_series(mp3_file_path: str, channels: str='left') -> tuple[n
     # If the audio has more than one channel, reshape the array
     if num_channels > 1:
         audio_data = audio_data.reshape((-1, num_channels))
+
+    # Crop audio data to desired section
+    start_idx = int(start_time * frame_rate)
+    end_idx = int(start_idx + duration * frame_rate)
+    if start_idx >= audio_data.shape[0]:
+        raise ValueError(f"Start time ({start_time} s) is after the end of the audio ({audio_data.shape[0]/frame_rate} s).")
+    if end_idx >= audio_data.shape[0]:
+        warnings.warn(f"Duration extends after the end of the audio. ({start_time+duration} s vs {audio_data.shape[0]/frame_rate} s). Using audio up to the EOF.")
+        end_idx = audio_data.shape[0]
+
+    audio_data = audio_data[start_idx:end_idx, :]
     
     # Extract the desired channel
     if channels == 'left':
@@ -107,7 +121,7 @@ if __name__ == "__main__":
     cutoff_freq = 5000 # Hz
 
     # Convert mp3 to filtered amplitude signal
-    amplitudes, frame_rate, sample_width, num_channels = mp3_to_amplitude_series(path+input_file, channels='left')
+    amplitudes, frame_rate, sample_width, num_channels = mp3_to_amplitude_series(path+input_file, channels='left', start_time=15.5)
     amplitudes_filtered = apply_low_pass_filter(amplitudes, frame_rate, cutoff_freq=cutoff_freq)
 
     # Export the filtered signal to an MP3 file
