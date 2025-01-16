@@ -1,30 +1,31 @@
 from math import pi
-from builder3d import create_engraved_cylinder, create_tip_path_wire, export_path_to_csv
+import warnings
+from builder3d import export_path_to_csv
 from audio_processor import mp3_to_amplitude_series, apply_low_pass_filter
 import parameters as p
 
 
 # Extract amplitudes from audio
-amplitudes, frame_rate, *_ = mp3_to_amplitude_series(p.input_folder+p.input_filename, channels='left')
+amplitudes, frame_rate, *_ = mp3_to_amplitude_series(p.input_folder+p.input_filename, channels='left', start_time=p.start_time, duration=p.duration)
 if p.filter_active:
     # Apply low pass filter
-    amplitudes = apply_low_pass_filter(amplitudes, frame_rate, cutoff_freq=p.cutoff_freq)
+    amplitudes = apply_low_pass_filter(amplitudes, frame_rate, cutoff_freq=p.cutoff_freq, downsample=True)
 
 # Create path points from amplitudes
-start_idx = 2*p.cutoff_freq*5
 path_points = []
 for i,amp in enumerate(amplitudes):
-    if i > start_idx:
-        radius = p.R-p.depth
-        phase = (i-start_idx) * p.speed/frame_rate
-        elevation = phase*p.pitch/(2*pi) + amp*p.max_amplitude + p.end_margin
-        if elevation <= p.L - p.end_margin:
-            path_points.append((radius, phase, elevation))
-        else:
-            print(f"Stopped by end of cylinder at index {i}/{len(amplitudes)} (engraved {round((i-start_idx)/len(amplitudes),3)} %).")
-            break
+    radius = p.R-p.depth
+    phase = (i) * p.speed/frame_rate
+    elevation = phase*p.pitch/(2*pi) + amp*p.max_amplitude/2 + p.end_margin
+    if elevation > p.L - p.end_margin:
+        warnings.warn(f"Engraving stopped by end of cylinder.")
+        break
+    else:
+        path_points.append((radius, phase, elevation))
+
+print(f"Path contains {i+1}/{len(amplitudes)} points ({round((i+1)/len(amplitudes)*100,3)} %) from the audio segment.")
+used_length = path_points[-1][-1] - p.start_pos - p.end_margin
+print(f"Engraving takes {round(used_length, 3)} mm, {round(used_length/(p.L - 2*p.end_margin)*100, 3)} % of the available space of the cylinder.")
 
 # Create the engraved cylinder and wire
-# create_engraved_cylinder(p.R, p.L, p.angle, path_points, p.output_folder+p.output_filename)
-# create_tip_path_wire(tip_path=path_points, filename=p.output_folder+p.output_filename)
 export_path_to_csv(path_points, p.output_folder+p.output_filename)
