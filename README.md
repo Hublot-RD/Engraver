@@ -8,9 +8,9 @@ Scripts to generate engraving files from audio
 1. Install all other packages listed in requirements.txt
 
 ## Usage
-1. Add your audio .mp3 file in the "audio_files" folder
-1. In "parameters.py", edit "input_filename" with the name of your file. Modify any other relevant parameter.
-1. Run "main.py" and check that it created a .csv file.
+1. Add your *.mp3* audio file in the *audio_files* folder
+1. In *parameters.py*, edit *input_filename* with the name of your file. Modify any other relevant parameter.
+1. Run *main.py* and check that it created a *.csv* file.
 1. Open SolidWorks and create a new part
-1. Run the macro "generator1.swp" (Outils/Macros/Executer)
-1. When asked, select the .csv file that you just created.
+1. Run the macro *generator1.swp* (Outils/Macros/Executer)
+1. When asked, select the *.csv* file that you just created.
