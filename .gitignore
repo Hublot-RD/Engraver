@@ -177,6 +177,7 @@ cython_debug/
 # 3D object files
 *.stp
 *.step
+*.igs
 *.SLDPRT
 *.csv
 

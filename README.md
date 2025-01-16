@@ -1,5 +1,5 @@
 # Engraver
-Scripts to generate engraving files from audio
+Scripts to generate engraving files from audio.
 
 
 ## Making it work:
