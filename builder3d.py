@@ -153,9 +153,9 @@ def export_path_to_csv(path: list[tuple[float, float, float]], filename: str, sp
         loops = []
         nb_loops = floor(path[-1][1] / (2*pi))
         for i in range(nb_loops):
-            end = next((index for index, point in enumerate(path) if point[1] >= (i+1)*2*pi), None)
+            end = next((index for index, point in enumerate(path) if point[1] >= (i+1)*2*pi), len(path))
             loops.append(path[start:end])
-            start = end
+            start = end - 1 # -1 so that the next loop starts at the same point as the previous one
 
         for i, loop in enumerate(loops):
             loop_filename = f"{folder}/{filename}_{i}.csv"
