@@ -6,8 +6,9 @@ from OCC.Core.gp import gp_Pnt, gp_Ax1, gp_Dir, gp_Vec
 from OCC.Core.STEPControl import STEPControl_Writer, STEPControl_AsIs
 from OCC.Core.IFSelect import IFSelect_RetDone
 from OCC.Core.TopoDS import TopoDS_Shape, TopoDS_Wire
-from math import tan, radians
+from math import tan, radians, floor
 import numpy as np
+import os, glob
 
 import geometry as g
 
@@ -126,22 +127,46 @@ def export_shape_to_step(shape: TopoDS_Shape, filename: str) -> None:
     else:
         print("Error: Failed to create STEP file.")
 
-def export_path_to_csv(path: list[tuple[float, float, float]], filename: str) -> None:
+def export_path_to_csv(path: list[tuple[float, float, float]], filename: str, split_files: bool=True) -> None:
     """
-    Export a path as a CSV file in cartesian coordinates.
+    Export a path as one or multiple CSV files in cartesian coordinates.
 
     :param path: The path to export.
     :param filename: Filename for the CSV file. Can include .csv or not.
+    :param split_files: If True, each loop will be written to a separate file, in a folder. If False, all points will be written to a single file.
     """
-    if filename.endswith(".csv") is False:
-        filename += ".csv"
-    
-    with open(filename, "w") as file:
-        # file.write("x, y, z\n")
-        for point in path:
-            x, y, z = g.cyl2cart(*point)
-            file.write(f"{x/1000}, {y/1000}, {z/1000}\n")
-    print(f"CSV file '{filename}' created successfully.")
+    if filename.endswith(".csv") is True:
+        filename = filename[:-4]
+
+    if split_files:
+        folder = filename + "_files"
+        filename = filename.split("/")[-1]
+
+        # Create new empty folder
+        os.makedirs(folder, exist_ok=True)
+        # files = glob.glob(folder+'*')
+        # for f in files:
+        #     os.remove(f)
+
+        # Split the path into each loop
+        start = 0
+        loops = []
+        nb_loops = floor(path[-1][1] / (2*pi))
+        for i in range(nb_loops):
+            end = next((index for index, point in enumerate(path) if point[1] >= (i+1)*2*pi), None)
+            loops.append(path[start:end])
+            start = end
+
+        for i, loop in enumerate(loops):
+            loop_filename = f"{folder}/{filename}_{i}.csv"
+            export_path_to_csv(loop, loop_filename, False)
+        print(f"CSV files created successfully in folder '{folder}'.")
+    else:
+        with open(filename, "w") as file:
+            for point in path:
+                x, y, z = g.cyl2cart(*point)
+                file.write(f"{x/1000}, {y/1000}, {z/1000}\n")
+        print(f"CSV file '{filename}' created successfully.")
 
 def carve_edge(cylinder: TopoDS_Shape, tip_path: list[tuple[float, float, float]], angle: float) -> TopoDS_Shape:
     """
@@ -252,16 +277,16 @@ if __name__ == "__main__":
     end_margin = 5 # Non engraved margin at each end of the cylinder
 
     # Define the path points (example: a spiral path)
-    path_points = [(R-depth, t/pitch*pi, t+end_margin) for t in linspace(0, L-2*end_margin, 100)]
+    path_points = [(R-depth, t/pitch*pi, t+end_margin) for t in linspace(0, L-2*end_margin, 500)]
 
     # Create the csv file with the path point coordinates
-    output_filename = "./3d_files/path_tip.csv"
+    output_filename = "./3d_files/test_tip_path.csv"
     export_path_to_csv(path_points, output_filename)
 
-    # Create the cylinder with a cutout along the path
-    output_filename = "./3d_files/engraved_cylinder.stp"
-    create_engraved_cylinder(R, L, angle, path_points, output_filename)
+    # # Create the cylinder with a cutout along the path
+    # output_filename = "./3d_files/test_engraved_cylinder.stp"
+    # create_engraved_cylinder(R, L, angle, path_points, output_filename)
 
-    # Create a wire of the same path
-    output_filename = "./3d_files/tip_path.stp"
-    create_tip_path_wire(path_points, output_filename)
+    # # Create a wire of the same path
+    # output_filename = "./3d_files/test_tip_path.stp"
+    # create_tip_path_wire(path_points, output_filename)
