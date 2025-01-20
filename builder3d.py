@@ -162,6 +162,7 @@ def export_path_to_csv(path: list[tuple[float, float, float]], filename: str, sp
             export_path_to_csv(loop, loop_filename, False)
         print(f"CSV files created successfully in folder '{folder}'.")
     else:
+        filename += '.csv'
         with open(filename, "w") as file:
             for point in path:
                 x, y, z = g.cyl2cart(*point)
