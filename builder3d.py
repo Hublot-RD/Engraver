@@ -268,17 +268,17 @@ if __name__ == "__main__":
     from numpy import linspace
     
     # Define the cylinder parameters
-    R = 27.0  # Radius
+    R = 28.0  # Radius
     L = 120.0  # Length
 
     # Define the engraving parameters
-    depth = 0.2  # Depth of the cut [mm]
+    depth = 0.05  # Depth of the cut [mm]
     angle = 90.0  # Angle of the cut
     pitch = 3 # Pitch of the spiral [mm]
     end_margin = 5 # Non engraved margin at each end of the cylinder
 
     # Define the path points (example: a spiral path)
-    path_points = [(R-depth, t/pitch*pi, t+end_margin) for t in linspace(0, L-2*end_margin, 500)]
+    path_points = [(R-depth, t/pitch*pi, t+end_margin) for t in linspace(0, L-2*end_margin, 5000)]
 
     # Create the csv file with the path point coordinates
     output_filename = "./3d_files/test_tip_path.csv"
