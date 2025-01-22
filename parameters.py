@@ -1,7 +1,7 @@
 from math import pi
 
 # Cylinder
-R = 28.0  # Radius [mm]
+R = 56.0/2  # Radius [mm]
 L = 120.0  # Length [mm]
 
 # Engraving

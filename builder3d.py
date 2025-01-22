@@ -6,7 +6,7 @@ from OCC.Core.gp import gp_Pnt, gp_Ax1, gp_Dir, gp_Vec
 from OCC.Core.STEPControl import STEPControl_Writer, STEPControl_AsIs
 from OCC.Core.IFSelect import IFSelect_RetDone
 from OCC.Core.TopoDS import TopoDS_Shape, TopoDS_Wire
-from math import tan, radians, floor
+from math import tan, radians, floor, pi
 import numpy as np
 import os, glob
 
@@ -151,14 +151,15 @@ def export_path_to_csv(path: list[tuple[float, float, float]], filename: str, sp
         # Split the path into each loop
         start = 0
         loops = []
-        nb_loops = floor(path[-1][1] / (2*pi))
+        nb_loops = floor(path[-1][1] / (pi))
         for i in range(nb_loops):
-            end = next((index for index, point in enumerate(path) if point[1] >= (i+1)*2*pi), len(path))
+            end = next((index for index, point in enumerate(path) if point[1] >= (i+1)*pi), len(path))
             loops.append(path[start:end])
-            start = end - 1 # -1 so that the next loop starts at the same point as the previous one
+            start = end - 2 # -2 so that the next loop has 2 points in common with the previous one
 
         for i, loop in enumerate(loops):
-            loop_filename = f"{folder}/{filename}_{i}.csv"
+            # Format i as string with three numbers
+            loop_filename = f"{folder}/{filename}_{i :03d}.csv"
             export_path_to_csv(loop, loop_filename, False)
         print(f"CSV files created successfully in folder '{folder}'.")
     else:
@@ -264,7 +265,6 @@ def create_tip_path_wire(tip_path: list[tuple[float, float, float]], filename: s
 
 # Example usage
 if __name__ == "__main__":
-    from math import pi
     from numpy import linspace
     
     # Define the cylinder parameters
