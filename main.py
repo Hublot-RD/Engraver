@@ -2,7 +2,7 @@ from math import pi
 import warnings
 from builder3d import export_path_to_csv
 from audio_processor import mp3_to_amplitude_series, apply_low_pass_filter
-import parameters as p
+from parameters import default_parameters as p
 
 
 # Extract amplitudes from audio
@@ -29,3 +29,7 @@ print(f"Engraving takes {round(used_length, 3)} mm, {round(used_length/(p.L - 2*
 
 # Create the engraved cylinder and wire
 export_path_to_csv(path_points, p.output_folder+p.output_filename)
+
+# Export parameters to a text file
+with open(p.output_folder+p.output_filename+"_parameters.txt", 'w') as f:
+    f.write(str(p))

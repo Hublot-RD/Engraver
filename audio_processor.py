@@ -27,9 +27,8 @@ def mp3_to_amplitude_series(mp3_file_path: str, channels: str='left', start_time
     # Convert raw data to numpy array
     audio_data = np.frombuffer(raw_data, dtype=np.int16)
     
-    # If the audio has more than one channel, reshape the array
-    if num_channels > 1:
-        audio_data = audio_data.reshape((-1, num_channels))
+    # Reshape the array as [audio signal length, number of channels]
+    audio_data = audio_data.reshape((-1, num_channels))
 
     # Crop audio data to desired section
     start_idx = int(start_time * frame_rate)
