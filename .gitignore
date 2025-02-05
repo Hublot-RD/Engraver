@@ -180,6 +180,7 @@ cython_debug/
 *.igs
 *.SLDPRT
 *.csv
+*path_parameters.txt
 
 # Specific folders
 audio_files/filtered/
