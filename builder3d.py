@@ -168,7 +168,7 @@ def export_path_to_csv(path: list[tuple[float, float, float]], filename: str, sp
             for point in path:
                 x, y, z = g.cyl2cart(*point)
                 file.write(f"{x/1000}, {y/1000}, {z/1000}\n")
-        print(f"CSV file '{filename}' created successfully.")
+        # print(f"CSV file '{filename}' created successfully.")
 
 def carve_edge(cylinder: TopoDS_Shape, tip_path: list[tuple[float, float, float]], angle: float) -> TopoDS_Shape:
     """

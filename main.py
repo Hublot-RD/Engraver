@@ -9,14 +9,14 @@ from parameters import default_parameters as p
 amplitudes, frame_rate, *_ = mp3_to_amplitude_series(p.input_folder+p.input_filename, channels='left', start_time=p.start_time, duration=p.duration)
 if p.filter_active:
     # Apply low pass filter
-    amplitudes = apply_low_pass_filter(amplitudes, frame_rate, cutoff_freq=p.cutoff_freq, downsample=True)
+    amplitudes, frame_rate = apply_low_pass_filter(amplitudes, frame_rate, cutoff_freq=p.cutoff_freq, downsample=True)
 
 # Create path points from amplitudes
 path_points = []
 for i,amp in enumerate(amplitudes):
     radius = p.R-p.depth
-    phase = (i) * p.speed/frame_rate
-    elevation = phase*p.pitch/(2*pi) + amp*p.max_amplitude/2 + p.end_margin
+    phase = (i) * p.speed_angular/frame_rate
+    elevation = phase*p.pitch/(2*pi) + amp*p.max_amplitude/2 + p.end_margin + p.start_pos
     if elevation > p.L - p.end_margin:
         warnings.warn(f"Engraving stopped by end of cylinder.")
         break

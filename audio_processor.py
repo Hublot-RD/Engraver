@@ -58,14 +58,14 @@ def mp3_to_amplitude_series(mp3_file_path: str, channels: str='left', start_time
     
     return amplitude_series, frame_rate, sample_width, num_channels
 
-def apply_low_pass_filter(amplitude_series: np.ndarray, frame_rate: float, cutoff_freq: float, downsample: bool=False) -> np.ndarray:
+def apply_low_pass_filter(amplitude_series: np.ndarray, frame_rate: float, cutoff_freq: float, downsample: bool=False) -> tuple[np.ndarray, float]:
     """
     Apply a low-pass filter to an audio signal.
 
     :param amplitude_series: A numpy array of audio amplitude values.
     :param frame_rate: The frame rate of the audio.
     :param cutoff_freq: The cutoff frequency of the low-pass filter.
-    :return: A numpy array of filtered audio amplitude values
+    :return: A numpy array of filtered audio amplitude values and the new frame rate.
     """
     # Design the low-pass filter
     nyquist_rate = frame_rate / 2.0
@@ -79,8 +79,9 @@ def apply_low_pass_filter(amplitude_series: np.ndarray, frame_rate: float, cutof
         # Resample at 2*cutoff frequency
         nb_samples = int(len(filtered_amplitude_series) * 2*cutoff_freq / frame_rate)
         filtered_amplitude_series = signal.resample(filtered_amplitude_series, nb_samples)
+        new_frame_rate = 2*cutoff_freq
 
-    return filtered_amplitude_series
+    return filtered_amplitude_series, new_frame_rate
 
 def export_to_mp3(amplitude_series: np.ndarray, frame_rate: float, sample_width: float, num_channels: int, output_file_path: str) -> None:
     """
