@@ -14,17 +14,17 @@ class ParameterSet:
     speed = 33.5*pi/30*150/2 # Longitudinal reading speed of a 12" vinyl at the inner edge [mm/s]
     speed_angular = speed / R
     end_margin = 5 # Margin at the start and end of the cylinder [mm]
-    start_pos = 80 # Position of the start of the engraving
+    start_pos = 0 # Position of the start of the engraving
 
     # Audio
     filter_active = True
     cutoff_freq = 5000 # Hz
-    start_time = 0 # How many seconds to crop from the start of the audio
+    start_time = 0.001 # How many seconds to crop from the start of the audio
     duration = 5 # Duration of the audio signal [s]
 
     # Folders and file name
     input_folder = "./audio_files/"
-    input_filename = "1000Hz.mp3"
+    input_filename = "200Hz.mp3"
     output_folder = "./3d_files/"
     output_filename = f'{round(depth*1e3)}_{round(max_amplitude*1e3)}_{round(pitch*1e3)}_{input_filename.split('.')[0]}_path'
     

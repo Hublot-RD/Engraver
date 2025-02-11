@@ -127,7 +127,7 @@ def export_shape_to_step(shape: TopoDS_Shape, filename: str) -> None:
     else:
         print("Error: Failed to create STEP file.")
 
-def export_path_to_csv(path: list[tuple[float, float, float]], filename: str, split_files: bool=True) -> None:
+def export_path_to_csv(path: list[tuple[float, float, float]], filename: str, split_files: bool=True, files_per_turn: float = 4) -> None:
     """
     Export a path as one or multiple CSV files in cartesian coordinates.
 
@@ -151,9 +151,9 @@ def export_path_to_csv(path: list[tuple[float, float, float]], filename: str, sp
         # Split the path into each loop
         start = 0
         loops = []
-        nb_loops = floor(path[-1][1] / (pi))
+        nb_loops = floor(path[-1][1] / (2*pi/files_per_turn))
         for i in range(nb_loops):
-            end = next((index for index, point in enumerate(path) if point[1] >= (i+1)*pi), len(path))
+            end = next((index for index, point in enumerate(path) if point[1] >= (i+1)*2*pi/files_per_turn), len(path))
             loops.append(path[start:end])
             start = end - 2 # -2 so that the next loop has 2 points in common with the previous one
 
