@@ -15,6 +15,7 @@ class ParameterSet:
     speed_angular = speed / R
     end_margin = 5 # Margin at the start and end of the cylinder [mm]
     start_pos = 0 # Position of the start of the engraving
+    files_per_turn = 1.1 # Number of files per turn of the cylinder
 
     # Audio
     filter_active = True

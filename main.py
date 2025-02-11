@@ -28,7 +28,7 @@ used_length = path_points[-1][-1] - p.start_pos - p.end_margin
 print(f"Engraving takes {round(used_length, 3)} mm, {round(used_length/(p.L - 2*p.end_margin)*100, 3)} % of the available space of the cylinder.")
 
 # Create the engraved cylinder and wire
-export_path_to_csv(path_points, p.output_folder+p.output_filename)
+export_path_to_csv(path_points, p.output_folder+p.output_filename, files_per_turn=p.files_per_turn)
 
 # Export parameters to a text file
 with open(p.output_folder+p.output_filename+"_parameters.txt", 'w') as f:
