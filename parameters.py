@@ -27,7 +27,7 @@ class ParameterSet:
     input_folder = "./audio_files/"
     input_filename = "200Hz.mp3"
     output_folder = "./3d_files/"
-    output_filename = f'{round(depth*1e3)}_{round(max_amplitude*1e3)}_{round(pitch*1e3)}_{input_filename.split('.')[0]}_path'
+    output_filename = f'{round(depth*1e3)}_{round(max_amplitude*1e3)}_{round(pitch*1e3)}_{input_filename.split(".")[0]}_path'
     
     def __init__(self) -> None:
         pass

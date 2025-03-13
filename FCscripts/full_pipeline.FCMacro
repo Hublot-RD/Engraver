@@ -33,26 +33,33 @@ def create_cylinder(radius, length):
     cylinder_obj.Shape = cylinder
     return cylinder_obj
 
-def create_z_axis():
-    """Create a construction line along Z axis"""
-    line = Part.makeLine(App.Vector(0,0,0), App.Vector(0,0,CYL_LENGTH))
-    axis_obj = doc.addObject("Part::Feature", "Z_Axis")
-    axis_obj.Shape = line
-    axis_obj.ViewObject.LineColor = (1.0, 0.0, 0.0)  # Red color
-    return axis_obj
-
-def create_triangle_profile(tip_point):
+def create_triangle_profile(tip_point, next_point):
     """Create triangular profile for the engraving"""
     tip_x, tip_y, tip_z = tip_point
-    r, theta = cart_to_cyl(tip_x, tip_y, tip_z)
+    _, theta = cart_to_cyl(tip_x, tip_y, tip_z)
     
-    # Calculate top and bottom points
-    top_z = tip_z + TRI_HEIGHT * math.tan(TRI_ANGLE / 2)
-    bot_z = tip_z - TRI_HEIGHT * math.tan(TRI_ANGLE / 2)
-    
-    top_x, top_y, _ = cyl_to_cart(r + TRI_HEIGHT, theta, top_z)
-    bot_x, bot_y, _ = cyl_to_cart(r + TRI_HEIGHT, theta, bot_z)
-    
+    # Create base triangle with tip at the origin, on yz plane    
+    top_x, top_y, top_z = TRI_HEIGHT, 0,  TRI_HEIGHT * math.tan(TRI_ANGLE / 2)
+    bot_x, bot_y, bot_z = TRI_HEIGHT, 0, -TRI_HEIGHT * math.tan(TRI_ANGLE / 2)
+
+    # Rotate triangle around x axis
+    dx, dy, dz = next_point[0] - tip_x, next_point[1] - tip_y, next_point[2] - tip_z
+    angle = -math.atan2(dz, math.sqrt(dx**2 + dy**2))
+    top_y, top_z = -top_z * math.sin(angle), top_z * math.cos(angle)
+    bot_y, bot_z = -top_y, -top_z
+
+    # Rotate the triangle around z axis
+    top_x, top_y = top_x * math.cos(theta) - top_y * math.sin(theta), top_x * math.sin(theta) + top_y * math.cos(theta)
+    bot_x, bot_y = bot_x * math.cos(theta) - bot_y * math.sin(theta), bot_x * math.sin(theta) + bot_y * math.cos(theta)
+
+    # Translate the triangle to the tip
+    top_x += tip_x
+    top_y += tip_y
+    top_z += tip_z
+    bot_x += tip_x
+    bot_y += tip_y
+    bot_z += tip_z
+
     # Create triangle wire
     v1 = App.Vector(tip_x, tip_y, tip_z)
     v2 = App.Vector(top_x, top_y, top_z)
@@ -69,19 +76,19 @@ def round_corners(wire, radius):
         for i in range(len(wire.Vertexes)):
             edges.append(Part.Edge(wire.Vertexes[i], wire.Vertexes[(i+1)%len(wire.Vertexes)]))
         
-        # Create a list of fillets
-        fillets = []
-        for edge in edges:
-            fillet = edge.makeFillet(radius)
-            fillets.append(fillet)
+        # # Create a list of fillets
+        # fillets = []
+        # for edge in edges:
+        #     fillet = edge.makeFillet(radius)
+        #     fillets.append(fillet)
         
-        # Create a list of vertices
-        vertices = []
-        for fillet in fillets:
-            vertices.extend(fillet.Vertexes)
+        # # Create a list of vertices
+        # vertices = []
+        # for fillet in fillets:
+        #     vertices.extend(fillet.Vertexes)
         
         # Create a new wire
-        new_wire = Part.Wire(vertices)
+        new_wire = wire.toShape().makeFillets(radius, edges)
         return new_wire
     
     except Exception as e:
@@ -101,13 +108,13 @@ def engrave_once(file_path, loop_id):
         path_wire = Part.makePolygon(points)
 
         # Round corners of the path wire
-        path_wire = round_corners(path_wire, FILLET_RADIUS)
+        # path_wire = round_corners(path_wire, FILLET_RADIUS)
 
         path_obj = doc.addObject("Part::Feature", f"Loop_{loop_id}")
         path_obj.Shape = path_wire
 
         # Create triangle profile
-        profile_wire = create_triangle_profile(points[-1])
+        profile_wire = create_triangle_profile(points[-1], points[-2])
         profile_obj = doc.addObject("Part::Feature", f"Triangle_{loop_id}")
         profile_obj.Shape = profile_wire
 
@@ -147,10 +154,11 @@ def main():
     
     # Create new document
     doc = App.newDocument()
+
+    print("-"*10 + " Generating engraved cylinder " + "-"*10)
     
     # Create base cylinder
     create_cylinder(CYL_RADIUS, CYL_LENGTH)
-    #create_z_axis()
     
     # Get folder with CSV files
     folder_path = select_folder()
