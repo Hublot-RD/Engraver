@@ -1,0 +1,174 @@
+import FreeCAD as App
+import FreeCADGui as Gui
+import Part
+import math
+import os
+from PySide2.QtWidgets import QFileDialog
+
+# Global variables
+doc = None
+# Constants for the engraving
+TRI_HEIGHT = 1  # Height of the triangle [mm]
+TRI_ANGLE = math.pi / 2  # Angle of the tip [rad]
+CYL_RADIUS = 26.5  # Radius of the cylinder [mm]
+CYL_LENGTH = 125  # Length of the cylinder [mm]
+FILLET_RADIUS = 0.005 # Radius of the fillet to smooth tip path
+
+def cyl_to_cart(r, theta, z):
+    """Convert cylindrical coordinates to cartesian"""
+    x = r * math.cos(theta)
+    y = r * math.sin(theta)
+    return (x, y, z)
+
+def cart_to_cyl(x, y, z):
+    """Convert cartesian coordinates to cylindrical"""
+    r = math.sqrt(x*x + y*y)
+    theta = math.atan2(y, x)
+    return (r, theta)
+
+def create_cylinder(radius, length):
+    """Create a cylinder with given radius and length"""
+    cylinder = Part.makeCylinder(radius, length)
+    cylinder_obj = doc.addObject("Part::Feature", "Cylinder")
+    cylinder_obj.Shape = cylinder
+    return cylinder_obj
+
+def create_z_axis():
+    """Create a construction line along Z axis"""
+    line = Part.makeLine(App.Vector(0,0,0), App.Vector(0,0,CYL_LENGTH))
+    axis_obj = doc.addObject("Part::Feature", "Z_Axis")
+    axis_obj.Shape = line
+    axis_obj.ViewObject.LineColor = (1.0, 0.0, 0.0)  # Red color
+    return axis_obj
+
+def create_triangle_profile(tip_point):
+    """Create triangular profile for the engraving"""
+    tip_x, tip_y, tip_z = tip_point
+    r, theta = cart_to_cyl(tip_x, tip_y, tip_z)
+    
+    # Calculate top and bottom points
+    top_z = tip_z + TRI_HEIGHT * math.tan(TRI_ANGLE / 2)
+    bot_z = tip_z - TRI_HEIGHT * math.tan(TRI_ANGLE / 2)
+    
+    top_x, top_y, _ = cyl_to_cart(r + TRI_HEIGHT, theta, top_z)
+    bot_x, bot_y, _ = cyl_to_cart(r + TRI_HEIGHT, theta, bot_z)
+    
+    # Create triangle wire
+    v1 = App.Vector(tip_x, tip_y, tip_z)
+    v2 = App.Vector(top_x, top_y, top_z)
+    v3 = App.Vector(bot_x, bot_y, bot_z)
+    
+    wire = Part.makePolygon([v1, v2, v3, v1])
+    return wire
+
+def round_corners(wire, radius):
+    """Rounds the corners of a Part.Wire with a given radius"""
+    try:
+        # Create a list of edges
+        edges = []
+        for i in range(len(wire.Vertexes)):
+            edges.append(Part.Edge(wire.Vertexes[i], wire.Vertexes[(i+1)%len(wire.Vertexes)]))
+        
+        # Create a list of fillets
+        fillets = []
+        for edge in edges:
+            fillet = edge.makeFillet(radius)
+            fillets.append(fillet)
+        
+        # Create a list of vertices
+        vertices = []
+        for fillet in fillets:
+            vertices.extend(fillet.Vertexes)
+        
+        # Create a new wire
+        new_wire = Part.Wire(vertices)
+        return new_wire
+    
+    except Exception as e:
+        print(f"Error in round_corners: {str(e)}")
+        return None
+
+def engrave_once(file_path, loop_id):
+    """Create one engraving loop"""
+    try:
+        points = []
+        with open(file_path, 'r') as f:
+            for line in f:
+                x, y, z = map(float, line.strip().split(','))
+                points.append(App.Vector(x*1e3, y*1e3, z*1e3))
+
+        # Create path wire
+        path_wire = Part.makePolygon(points)
+
+        # Round corners of the path wire
+        path_wire = round_corners(path_wire, FILLET_RADIUS)
+
+        path_obj = doc.addObject("Part::Feature", f"Loop_{loop_id}")
+        path_obj.Shape = path_wire
+
+        # Create triangle profile
+        profile_wire = create_triangle_profile(points[-1])
+        profile_obj = doc.addObject("Part::Feature", f"Triangle_{loop_id}")
+        profile_obj.Shape = profile_wire
+
+        # Create sweep
+        sweep_obj = doc.addObject("Part::Sweep", f"Sweep_{loop_id}")
+        sweep_obj.Sections = [profile_obj]  # Use the document object
+        sweep_obj.Spine = (path_obj, [])  # Use the document object
+        sweep_obj.Solid = True
+        sweep_obj.Frenet = True
+        sweep_obj.recompute()
+
+        # Create the cut operation
+        cut_obj = doc.addObject("Part::Cut", f"Cut_{loop_id}")
+
+        # Determine the base object for the cut
+        if loop_id == 0:
+            cut_obj.Base = doc.getObject("Cylinder")
+        else:
+            cut_obj.Base = doc.getObject(f"Cut_{loop_id-1}")
+
+        cut_obj.Tool = sweep_obj
+        doc.recompute()
+        return True
+
+    except Exception as e:
+        print(f"Error in engrave_once: {str(e)}")
+        return False
+
+def select_folder():
+    """Open folder selection dialog"""
+    folder = QFileDialog.getExistingDirectory()
+    return folder if folder else None
+
+def main():
+    """Main function"""
+    global doc
+    
+    # Create new document
+    doc = App.newDocument()
+    
+    # Create base cylinder
+    create_cylinder(CYL_RADIUS, CYL_LENGTH)
+    #create_z_axis()
+    
+    # Get folder with CSV files
+    folder_path = select_folder()
+    if not folder_path:
+        print("No folder selected")
+        return
+    
+    # Process all CSV files
+    for i, filename in enumerate(sorted(os.listdir(folder_path))):
+        if filename.endswith('.csv'):
+            file_path = os.path.join(folder_path, filename)
+            print(f"Processing file {filename}")
+            if not engrave_once(file_path, i):
+                print(f"Failed to process {filename}")
+                break
+    
+    doc.recompute()
+    Gui.SendMsgToActiveView("ViewFit")
+
+if __name__ == '__main__':
+    main()

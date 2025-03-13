@@ -1,0 +1,239 @@
+# -*- coding: utf-8 -*-
+
+# Macro Begin: C:\Users\v.philippoz\AppData\Roaming\FreeCAD\Macro\sweep_rec.FCMacro +++++++++++++++++++++++++++++++++++++++++++++++++
+import FreeCAD
+import Sketcher
+import Part
+
+# Gui.runCommand('Std_DlgMacroRecord',0)
+### Begin command Sketcher_NewSketch
+App.activeDocument().addObject('Sketcher::SketchObject', 'Sketch')
+App.activeDocument().Sketch.Placement = App.Placement(App.Vector(0.000000, 0.000000, 0.000000), App.Rotation(0.000000, 0.000000, 0.000000, 1.000000))
+App.activeDocument().Sketch.MapMode = "Deactivated"
+# Gui.activeDocument().setEdit('Sketch')
+# ActiveSketch = App.getDocument('Unnamed').getObject('Sketch')
+# tv = Show.TempoVis(App.ActiveDocument, tag= ActiveSketch.ViewObject.TypeId)
+# ActiveSketch.ViewObject.TempoVis = tv
+# if ActiveSketch.ViewObject.EditingWorkbench:
+#   tv.activateWorkbench(ActiveSketch.ViewObject.EditingWorkbench)
+# if ActiveSketch.ViewObject.HideDependent:
+#   tv.hide(tv.get_all_dependent(App.getDocument('Unnamed').getObject('Sketch'), ''))
+# if ActiveSketch.ViewObject.ShowSupport:
+#   tv.show([ref[0] for ref in ActiveSketch.AttachmentSupport if not ref[0].isDerivedFrom("PartDesign::Plane")])
+# if ActiveSketch.ViewObject.ShowLinks:
+#   tv.show([ref[0] for ref in ActiveSketch.ExternalGeometry])
+# tv.sketchClipPlane(ActiveSketch, ActiveSketch.ViewObject.SectionView)
+# tv.hide(ActiveSketch)
+# del(tv)
+# del(ActiveSketch)
+# 
+# ActiveSketch = App.getDocument('Unnamed').getObject('Sketch')
+# if ActiveSketch.ViewObject.RestoreCamera:
+#   ActiveSketch.ViewObject.TempoVis.saveCamera()
+#   if ActiveSketch.ViewObject.ForceOrtho:
+#     ActiveSketch.ViewObject.Document.ActiveView.setCameraType('Orthographic')
+# 
+### End command Sketcher_NewSketch
+# Gui.runCommand('Sketcher_CompCreateConic',0)
+ActiveSketch = App.getDocument('Unnamed').getObject('Sketch')
+
+lastGeoId = len(ActiveSketch.Geometry)
+
+geoList = []
+geoList.append(Part.Circle(App.Vector(0.000000, 0.000000, 0.000000), App.Vector(0.000000, 0.000000, 1.000000), 9.796103))
+App.getDocument('Unnamed').getObject('Sketch').addGeometry(geoList,False)
+del geoList
+
+constraintList = []
+App.getDocument('Unnamed').getObject('Sketch').addConstraint(Sketcher.Constraint('Coincident', 0, 3, -1, 1))
+
+
+### Begin command Sketcher_LeaveSketch
+# Gui.activeDocument().resetEdit()
+App.ActiveDocument.recompute()
+# ActiveSketch = App.getDocument('Unnamed').getObject('Sketch')
+# tv = ActiveSketch.ViewObject.TempoVis
+# if tv:
+#   tv.restore()
+# ActiveSketch.ViewObject.TempoVis = None
+# del(tv)
+# del(ActiveSketch)
+# 
+App.ActiveDocument.recompute()
+### End command Sketcher_LeaveSketch
+# Gui.Selection.addSelection('Unnamed','Sketch')
+### Begin command Sketcher_NewSketch
+App.activeDocument().addObject('Sketcher::SketchObject', 'Sketch001')
+# App.activeDocument().Sketch001.MapMode = "ObjectXZ"
+# App.activeDocument().Sketch001.AttachmentSupport = [(App.getDocument('Unnamed').getObject('Sketch'),'')]
+# App.activeDocument().recompute()
+# Gui.activeDocument().setEdit('Sketch001')
+# ActiveSketch = App.getDocument('Unnamed').getObject('Sketch001')
+# tv = Show.TempoVis(App.ActiveDocument, tag= ActiveSketch.ViewObject.TypeId)
+# ActiveSketch.ViewObject.TempoVis = tv
+# if ActiveSketch.ViewObject.EditingWorkbench:
+#   tv.activateWorkbench(ActiveSketch.ViewObject.EditingWorkbench)
+# if ActiveSketch.ViewObject.HideDependent:
+#   tv.hide(tv.get_all_dependent(App.getDocument('Unnamed').getObject('Sketch001'), ''))
+# if ActiveSketch.ViewObject.ShowSupport:
+#   tv.show([ref[0] for ref in ActiveSketch.AttachmentSupport if not ref[0].isDerivedFrom("PartDesign::Plane")])
+# if ActiveSketch.ViewObject.ShowLinks:
+#   tv.show([ref[0] for ref in ActiveSketch.ExternalGeometry])
+# tv.sketchClipPlane(ActiveSketch, ActiveSketch.ViewObject.SectionView)
+# tv.hide(ActiveSketch)
+# del(tv)
+# del(ActiveSketch)
+# 
+# ActiveSketch = App.getDocument('Unnamed').getObject('Sketch001')
+# if ActiveSketch.ViewObject.RestoreCamera:
+#   ActiveSketch.ViewObject.TempoVis.saveCamera()
+#   if ActiveSketch.ViewObject.ForceOrtho:
+#     ActiveSketch.ViewObject.Document.ActiveView.setCameraType('Orthographic')
+# 
+### End command Sketcher_NewSketch
+# Gui.Selection.clearSelection()
+# Gui.runCommand('Sketcher_CreateLine',0)
+ActiveSketch = App.getDocument('Unnamed').getObject('Sketch001')
+
+lastGeoId = len(ActiveSketch.Geometry)
+
+geoList = []
+geoList.append(Part.LineSegment(App.Vector(0.000000, 0.000000, 0.000000),App.Vector(5.714242, 27.362928, 0.000000)))
+App.getDocument('Unnamed').getObject('Sketch001').addGeometry(geoList,False)
+del geoList
+
+constraintList = []
+App.getDocument('Unnamed').getObject('Sketch001').addConstraint(Sketcher.Constraint('Coincident', 0, 1, -1, 1))
+
+
+ActiveSketch = App.getDocument('Unnamed').getObject('Sketch001')
+
+lastGeoId = len(ActiveSketch.Geometry)
+
+geoList = []
+geoList.append(Part.LineSegment(App.Vector(5.714242, 27.362928, 0.000000),App.Vector(25.714241, 41.428864, 0.000000)))
+App.getDocument('Unnamed').getObject('Sketch001').addGeometry(geoList,False)
+del geoList
+
+constraintList = []
+App.getDocument('Unnamed').getObject('Sketch001').addConstraint(Sketcher.Constraint('Coincident', 1, 1, 0, 2))
+
+
+ActiveSketch = App.getDocument('Unnamed').getObject('Sketch001')
+
+lastGeoId = len(ActiveSketch.Geometry)
+
+geoList = []
+geoList.append(Part.LineSegment(App.Vector(25.714241, 41.428864, 0.000000),App.Vector(29.246096, 69.011765, 0.000000)))
+App.getDocument('Unnamed').getObject('Sketch001').addGeometry(geoList,False)
+del geoList
+
+constraintList = []
+App.getDocument('Unnamed').getObject('Sketch001').addConstraint(Sketcher.Constraint('Coincident', 2, 1, 1, 2))
+
+
+# Gui.getDocument('Unnamed').resetEdit()
+App.ActiveDocument.recompute()
+# ActiveSketch = App.getDocument('Unnamed').getObject('Sketch001')
+# tv = ActiveSketch.ViewObject.TempoVis
+# if tv:
+#   tv.restore()
+# ActiveSketch.ViewObject.TempoVis = None
+# del(tv)
+# del(ActiveSketch)
+# 
+# Gui.Selection.addSelection('Unnamed','Sketch001')
+App.getDocument('Unnamed').recompute()
+### Begin command Part_Sweep
+from FreeCAD import Base
+### End command Part_Sweep
+# Gui.Selection.addSelection('Unnamed','Sketch')
+# Gui.Selection.clearSelection()
+# Gui.Selection.addSelection('Unnamed','Sketch001','Edge1',4.16103,-2.37528e-06,19.9253)
+# Gui.Selection.clearSelection()
+# Gui.Selection.addSelection('Unnamed','Sketch001','Edge2',13.7382,-3.93464e-06,33.0061)
+# Gui.Selection.clearSelection()
+# Gui.Selection.addSelection('Unnamed','Sketch001','Edge3',26.5362,-5.70399e-06,47.8485)
+# Gui.Selection.addSelection('Unnamed','Sketch001','Edge1',3.73876,-2.13423e-06,17.9032)
+# Gui.Selection.addSelection('Unnamed','Sketch001','Edge2',13.2816,-3.89636e-06,32.685)
+# Gui.Selection.addSelection('Unnamed','Sketch001')
+# Gui.Selection.removeSelection('Unnamed','Sketch001','Edge3')
+# Gui.Selection.removeSelection('Unnamed','Sketch001','Edge1')
+# Gui.Selection.removeSelection('Unnamed','Sketch001','Edge2')
+# Gui.Selection.removeSelection('Unnamed','Sketch001')
+# Gui.Selection.addSelection('Unnamed','Sketch')
+# Gui.Selection.removeSelection('Unnamed','Sketch')
+# Gui.Selection.addSelection('Unnamed','Sketch001')
+# Gui.Selection.removeSelection('Unnamed','Sketch001')
+# Gui.Selection.addSelection('Unnamed','Sketch')
+# Gui.Selection.addSelection('Unnamed','Sketch001')
+# Gui.Selection.removeSelection('Unnamed','Sketch001')
+# Gui.Selection.removeSelection('Unnamed','Sketch')
+# Gui.Selection.addSelection('Unnamed','Sketch001')
+# Gui.Selection.removeSelection('Unnamed','Sketch001')
+# Gui.Selection.addSelection('Unnamed','Sketch')
+# Gui.Selection.clearSelection()
+# Gui.Selection.addSelection('Unnamed','Sketch001','Edge1',4.23727,-2.4188e-06,20.2904)
+# Gui.Selection.clearSelection()
+# Gui.Selection.addSelection('Unnamed','Sketch001','Edge2',10.9976,-3.70487e-06,31.0787)
+# Gui.Selection.clearSelection()
+# Gui.Selection.addSelection('Unnamed','Sketch001','Edge3',26.3647,-5.54425e-06,46.5086)
+# Gui.Selection.addSelection('Unnamed','Sketch001','Edge2',18.9138,-4.36856e-06,36.6462)
+# Gui.Selection.addSelection('Unnamed','Sketch001','Edge1',2.67361,-1.5262e-06,12.8027)
+# Gui.Selection.addSelection('Unnamed','Sketch001')
+# Gui.Selection.removeSelection('Unnamed','Sketch001','Edge3')
+# Gui.Selection.removeSelection('Unnamed','Sketch001','Edge2')
+# Gui.Selection.removeSelection('Unnamed','Sketch001','Edge1')
+# Gui.Selection.removeSelection('Unnamed','Sketch001')
+# Gui.Selection.addSelection('Unnamed','Sketch')
+# Gui.Selection.removeSelection('Unnamed','Sketch')
+# Gui.Selection.addSelection('Unnamed','Sketch001')
+App.getDocument('Unnamed').addObject('Part::Sweep','Sweep')
+App.getDocument('Unnamed').ActiveObject.Sections=[App.getDocument('Unnamed').Sketch, ]
+App.getDocument('Unnamed').ActiveObject.Spine=(App.getDocument('Unnamed').getObject('Sketch001'),[])
+App.getDocument('Unnamed').ActiveObject.Solid=True
+App.getDocument('Unnamed').ActiveObject.Frenet=True
+
+# Gui.Selection.clearSelection()
+# Gui.Selection.addSelection('Unnamed','Sweep')
+# Gui.Selection.clearSelection()
+# Gui.Selection.addSelection('Unnamed','Sketch')
+# Gui.Selection.clearSelection()
+# Gui.Selection.addSelection('Unnamed','Sketch001')
+# Gui.Selection.clearSelection()
+# Gui.Selection.addSelection('Unnamed','Sweep')
+# Gui.Selection.clearSelection()
+# Gui.Selection.addSelection('Unnamed','Sweep')
+# Gui.ActiveDocument.setEdit(App.getDocument('Unnamed').getObject('Sweep'), 0)
+# Gui.Selection.clearSelection()
+# Gui.runCommand('Std_Undo',0)
+# Gui.Selection.addSelection('Unnamed','Sketch')
+### Begin command Part_Sweep
+from FreeCAD import Base
+### End command Part_Sweep
+# Gui.Selection.clearSelection()
+# Gui.Selection.addSelection('Unnamed','Sketch001','Edge3',27.4173,-6.52429e-06,54.7297)
+# Gui.Selection.addSelection('Unnamed','Sketch001','Edge2',18.2718,-4.31473e-06,36.1946)
+# Gui.Selection.addSelection('Unnamed','Sketch001','Edge1',3.62583,-2.06977e-06,17.3625)
+# Gui.Selection.addSelection('Unnamed','Sketch001')
+# Gui.Selection.removeSelection('Unnamed','Sketch001','Edge3')
+# Gui.Selection.removeSelection('Unnamed','Sketch001','Edge2')
+# Gui.Selection.removeSelection('Unnamed','Sketch001','Edge1')
+# Gui.Selection.removeSelection('Unnamed','Sketch001')
+# Gui.Selection.addSelection('Unnamed','Sketch')
+# Gui.Selection.removeSelection('Unnamed','Sketch')
+# Gui.Selection.addSelection('Unnamed','Sketch001')
+# Gui.Selection.removeSelection('Unnamed','Sketch001')
+# Gui.Selection.addSelection('Unnamed','Sketch')
+# Gui.Selection.addSelection('Unnamed','Sketch001')
+# Gui.Selection.clearSelection()
+# Gui.Selection.addSelection('Unnamed','Sketch001','Edge1',3.03418,-1.73203e-06,14.5293)
+# Gui.Selection.addSelection('Unnamed','Sketch001','Edge2',12.1595,-3.80229e-06,31.8959)
+# Gui.Selection.addSelection('Unnamed','Sketch001','Edge3',26.765,-5.91693e-06,49.6348)
+App.getDocument('Unnamed').addObject('Part::Sweep','Sweep')
+App.getDocument('Unnamed').ActiveObject.Sections=[App.getDocument('Unnamed').Sketch, ]
+App.getDocument('Unnamed').ActiveObject.Spine=(App.getDocument('Unnamed').getObject('Sketch001'),['Edge1','Edge2','Edge3',])
+App.getDocument('Unnamed').ActiveObject.Solid=False
+App.getDocument('Unnamed').ActiveObject.Frenet=False
+
+# Macro End: C:\Users\v.philippoz\AppData\Roaming\FreeCAD\Macro\sweep_rec.FCMacro +++++++++++++++++++++++++++++++++++++++++++++++++
