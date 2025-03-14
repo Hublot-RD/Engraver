@@ -1,6 +1,6 @@
 import FreeCAD as App
 import FreeCADGui as Gui
-import Part
+import Part, Draft
 import math
 import os
 from PySide2.QtWidgets import QFileDialog
@@ -68,13 +68,20 @@ def create_triangle_profile(tip_point, next_point):
     wire = Part.makePolygon([v1, v2, v3, v1])
     return wire
 
+def create_tip_path(points):
+    """Create the path for the engraving tip"""
+    path = Part.makePolygon(points)
+    # path = round_corners(path, FILLET_RADIUS)
+    return path
+
 def round_corners(wire, radius):
     """Rounds the corners of a Part.Wire with a given radius"""
     try:
         # Create a list of edges
-        edges = []
-        for i in range(len(wire.Vertexes)):
-            edges.append(Part.Edge(wire.Vertexes[i], wire.Vertexes[(i+1)%len(wire.Vertexes)]))
+        shape = wire.Shape
+        edges = shape.Edges
+        filleted = shape.makeFillet(radius, edges)
+        return filleted
         
         # # Create a list of fillets
         # fillets = []
@@ -105,11 +112,7 @@ def engrave_once(file_path, loop_id):
                 points.append(App.Vector(x*1e3, y*1e3, z*1e3))
 
         # Create path wire
-        path_wire = Part.makePolygon(points)
-
-        # Round corners of the path wire
-        # path_wire = round_corners(path_wire, FILLET_RADIUS)
-
+        path_wire = create_tip_path(points)
         path_obj = doc.addObject("Part::Feature", f"Loop_{loop_id}")
         path_obj.Shape = path_wire
 

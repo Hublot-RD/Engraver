@@ -279,7 +279,7 @@ if __name__ == "__main__":
     end_margin = 55 # Non engraved margin at each end of the cylinder
 
     # Define the path points (example: a spiral path)
-    path_points = [(R-depth, t/pitch*pi, t+end_margin+cos(10*t)) for t in linspace(0, L-2*end_margin, 50)]
+    path_points = [(R-depth, t/pitch*pi, t+end_margin+cos(10*t)) for t in linspace(0, L-2*end_margin, 100)]
 
     # Create the csv file with the path point coordinates
     output_filename = "./3d_files/test_tip_path.csv"
