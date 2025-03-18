@@ -132,18 +132,34 @@ def engrave_once(file_path, loop_id):
     sweep_obj.Frenet = True
     sweep_obj.recompute()
 
-    # Create the cut operation
-    cut_obj = doc.addObject("Part::Cut", f"Cut_{loop_id}")
+    return sweep_obj
 
-    # Determine the base object for the cut
-    if loop_id == 0:
-        cut_obj.Base = doc.getObject("Cylinder")
-    else:
-        cut_obj.Base = doc.getObject(f"Cut_{loop_id-1}")
+def engrave_all(folder_path):
+    """Create all engraving loops"""
+    whole_sweep = None
+    for i, filename in enumerate(sorted(os.listdir(folder_path))):
+        if filename.endswith('.csv'):
+            file_path = os.path.join(folder_path, filename)
+            print(f"Processing file {filename}")
 
-    cut_obj.Tool = sweep_obj
+            # Create the engraving loop segment
+            new_sweep = engrave_once(file_path, loop_id=i)
+
+            # Merge the new segment with the previous ones
+            if whole_sweep:
+                fuse_obj = doc.addObject("Part::Fuse", f"MergedSweep_{i}")
+                fuse_obj.Base = whole_sweep
+                fuse_obj.Tool = new_sweep
+                doc.recompute()
+                whole_sweep = fuse_obj
+            else:
+                whole_sweep = new_sweep
+
+    # Engrave the cylinder with whole loop
+    cut_obj = doc.addObject("Part::Cut", f"EngravedCylinder")
+    cut_obj.Base = doc.getObject("Cylinder")
+    cut_obj.Tool = whole_sweep
     doc.recompute()
-    return True
 
 def select_folder():
     """Open folder selection dialog"""
@@ -169,13 +185,7 @@ def main():
         return
     
     # Process all CSV files
-    for i, filename in enumerate(sorted(os.listdir(folder_path))):
-        if filename.endswith('.csv'):
-            file_path = os.path.join(folder_path, filename)
-            print(f"Processing file {filename}")
-            if not engrave_once(file_path, i):
-                print(f"Failed to process {filename}")
-                break
+    engrave_all(folder_path)
     
     doc.recompute()
     Gui.SendMsgToActiveView("ViewFit")
