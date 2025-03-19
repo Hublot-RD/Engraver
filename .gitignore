@@ -178,6 +178,8 @@ cython_debug/
 *.stp
 *.step
 *.igs
+*.iges
+*.FCStd
 *.SLDPRT
 *.csv
 *path_parameters.txt

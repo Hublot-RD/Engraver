@@ -75,7 +75,7 @@ def create_tip_path(points):
     # edges = [Draft.make_line(points[i], points[i+1]) for i in range(len(points)-1)]
     # filleted = round_corners(edges, FILLET_RADIUS)
     path = Draft.make_wire(points)
-    path.FilletRadius = PATH_FILLET_RADIUS
+    # path.FilletRadius = PATH_FILLET_RADIUS
     return path
 
 # def round_corners(edges, radius):
@@ -120,19 +120,19 @@ def engrave_once(file_path, loop_id):
     # path_obj.Shape = path_wire
 
     # Create triangle profile
-    profile_obj = create_triangle_profile(points[-1], points[-2])
+    # profile_obj = create_triangle_profile(points[-1], points[-2])
     # profile_obj = doc.addObject("Part::Feature", f"Triangle_{loop_id}")
     # profile_obj.Shape = profile_wire
 
-    # Create sweep
-    sweep_obj = doc.addObject("Part::Sweep", f"Sweep_{loop_id}")
-    sweep_obj.Sections = [profile_obj]  # Use the document object
-    sweep_obj.Spine = (path_obj, [])  # Use the document object
-    sweep_obj.Solid = True
-    sweep_obj.Frenet = True
-    sweep_obj.recompute()
+    # # Create sweep
+    # sweep_obj = doc.addObject("Part::Sweep", f"Sweep_{loop_id}")
+    # sweep_obj.Sections = [profile_obj]  # Use the document object
+    # sweep_obj.Spine = (path_obj, [])  # Use the document object
+    # sweep_obj.Solid = True
+    # sweep_obj.Frenet = True
+    # sweep_obj.recompute()
 
-    return sweep_obj
+    # return sweep_obj
 
 def engrave_all(folder_path):
     """Create all engraving loops"""
@@ -146,20 +146,20 @@ def engrave_all(folder_path):
             new_sweep = engrave_once(file_path, loop_id=i)
 
             # Merge the new segment with the previous ones
-            if whole_sweep:
-                fuse_obj = doc.addObject("Part::Fuse", f"MergedSweep_{i}")
-                fuse_obj.Base = whole_sweep
-                fuse_obj.Tool = new_sweep
-                doc.recompute()
-                whole_sweep = fuse_obj
-            else:
-                whole_sweep = new_sweep
+    #         if whole_sweep:
+    #             fuse_obj = doc.addObject("Part::Fuse", f"MergedSweep_{i}")
+    #             fuse_obj.Base = whole_sweep
+    #             fuse_obj.Tool = new_sweep
+    #             doc.recompute()
+    #             whole_sweep = fuse_obj
+    #         else:
+    #             whole_sweep = new_sweep
 
-    # Engrave the cylinder with whole loop
-    cut_obj = doc.addObject("Part::Cut", f"EngravedCylinder")
-    cut_obj.Base = doc.getObject("Cylinder")
-    cut_obj.Tool = whole_sweep
-    doc.recompute()
+    # # Engrave the cylinder with whole loop
+    # cut_obj = doc.addObject("Part::Cut", f"EngravedCylinder")
+    # cut_obj.Base = doc.getObject("Cylinder")
+    # cut_obj.Tool = whole_sweep
+    # doc.recompute()
 
 def select_folder():
     """Open folder selection dialog"""
