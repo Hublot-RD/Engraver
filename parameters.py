@@ -15,7 +15,7 @@ class ParameterSet:
     speed_angular = speed / R
     end_margin = 5 # Margin at the start and end of the cylinder [mm]
     start_pos = 0 # Position of the start of the engraving
-    split_files = True # True if the path must be split into multiple files
+    split_files = False # True if the path must be split into multiple files
     files_per_turn = 2 # Number of files per turn of the cylinder
 
     # Audio
