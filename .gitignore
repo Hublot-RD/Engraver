@@ -183,6 +183,7 @@ cython_debug/
 *.SLDPRT
 *.csv
 *.tiff
+*.png
 *path_parameters.txt
 
 # Specific folders

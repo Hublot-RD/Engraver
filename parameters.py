@@ -27,14 +27,15 @@ class ParameterSet:
 
     # Image
     pixel_size = 0.01 # Size of a pixel in the image [mm]
-    engraving_pixel_width = int(width / pixel_size) + 2 # Width of the engraving in pixels with a margin of 1 pixel on each side
+    engraving_pixel_width = round(width / pixel_size) + 2 # Width of the engraving in pixels with a margin of 1 pixel on each side
+    interpolate = True
     white = 255 # Color for the engraving
     black = 0 # Color for the engraving
 
     # Folders and file name
     input_folder = "./audio_files/"
-    input_filename = "1000Hz.mp3"
-    output_folder = "./3d_files/"
+    input_filename = "200Hz.mp3"
+    output_folder = "./images/"
     output_filename = f'{round(depth*1e3)}_{round(max_amplitude*1e3)}_{round(pitch*1e3)}_{input_filename.split(".")[0]}_path'
     
     def __init__(self) -> None:
