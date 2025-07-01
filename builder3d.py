@@ -127,7 +127,7 @@ def export_shape_to_step(shape: TopoDS_Shape, filename: str) -> None:
     else:
         print("Error: Failed to create STEP file.")
 
-def export_path_to_csv(path: list[tuple[float, float, float]], filename: str, split_files: bool=True, files_per_turn: float = 4) -> None:
+def export_path_to_csv(path: list[tuple[float, float, float]], filename: str, split_files: bool=True, files_per_turn: float = 4, cyl_coord: bool=True) -> None:
     """
     Export a path as one or multiple CSV files in cartesian coordinates.
 
@@ -166,7 +166,8 @@ def export_path_to_csv(path: list[tuple[float, float, float]], filename: str, sp
         filename += '.csv'
         with open(filename, "w") as file:
             for point in path:
-                x, y, z = g.cyl2cart(*point)
+                if cyl_coord: x, y, z = g.cyl2cart(*point)
+                else: x, y, z = point
                 file.write(f"{x/1000}, {y/1000}, {z/1000}\n")
         # print(f"CSV file '{filename}' created successfully.")
 
@@ -260,7 +261,7 @@ def create_tip_path_wire(tip_path: list[tuple[float, float, float]], filename: s
     wire = wire_builder.Wire()
     
     # Export the result to a STEP file
-    export_shape_to_step(wire, filename)
+#     export_shape_to_step(wire, filename)
 
 
 # Example usage
