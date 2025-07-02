@@ -1,4 +1,4 @@
-from math import pi, atan
+from math import pi, asin
 import warnings
 from builder3d import export_path_to_csv
 from audio_processor import mp3_to_amplitude_series, apply_low_pass_filter
@@ -43,10 +43,10 @@ elif p.SURFACE_TYPE == 'disc':
     R_max, R_min = p.R - p.end_margin - p.start_pos, p.end_margin
     path_points.append((R_max, 0, p.L))
     for i,amp in enumerate(amplitudes):
-        prev_r, prev_teta, z = path_points[-1]
+        _, prev_teta, z = path_points[-1]
         
-        teta = prev_teta + 2 * atan(p.speed/(2*frame_rate*prev_r))
-        r = R_max * (1 - teta*p.pitch/(2*pi*(R_max - R_min))) #+ amp*p.max_amplitude/2
+        teta = prev_teta + 2 * asin(p.speed_angular/(2*frame_rate))
+        r = R_max * (1 - teta*p.pitch/(2*pi*(R_max - R_min))) + amp*p.max_amplitude/2
 
         if r < R_min:
             warnings.warn(f"Engraving stopped by center of disc.")

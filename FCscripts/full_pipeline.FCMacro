@@ -176,7 +176,7 @@ def main():
     print("-"*10 + " Generating engraved cylinder " + "-"*10)
     
     # Create base cylinder
-    create_cylinder(CYL_RADIUS, CYL_LENGTH)
+    #create_cylinder(CYL_RADIUS, CYL_LENGTH)
     
     # Get folder with CSV files
     folder_path = select_folder()
