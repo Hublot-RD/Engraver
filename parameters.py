@@ -8,7 +8,7 @@ class ParameterSet:
     L = 5.0  # Length [mm]
 
     # Engraving
-    depth = 0  # Depth of the cut [mm]
+    depth = 0.1  # Depth of the cut [mm]
     angle = 90.0  # Angle of the cut [°]
     pitch = 1 # Pitch of the spiral [mm]
     max_amplitude = 0.025 # Maximal amplitude of the engraved audio signal (peak-peak) [mm]
@@ -23,7 +23,7 @@ class ParameterSet:
     filter_active = True
     cutoff_freq = 5000 # Hz
     start_time = 0 # How many seconds to crop from the start of the audio
-    duration = 5 # Duration of the audio signal [s]
+    duration = 0.5 # Duration of the audio signal [s]
 
     # Folders and file name
     input_folder = "./audio_files/"

@@ -41,7 +41,7 @@ if p.SURFACE_TYPE == 'cylinder':
 elif p.SURFACE_TYPE == 'disc':
     path_points = []
     R_max, R_min = p.R - p.end_margin - p.start_pos, p.end_margin
-    path_points.append((R_max, 0, p.L))
+    path_points.append((R_max, 0, p.L-p.depth))
     for i,amp in enumerate(amplitudes):
         _, prev_teta, z = path_points[-1]
         

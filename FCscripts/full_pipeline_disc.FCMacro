@@ -11,7 +11,7 @@ doc = None
 TRI_HEIGHT = 0.2  # Height of the triangle [mm]
 TRI_ANGLE = math.pi / 2  # Angle of the tip [rad]
 CYL_RADIUS = 26.5  # Radius of the cylinder [mm]
-CYL_LENGTH = 125  # Length of the cylinder [mm]
+CYL_LENGTH = 5  # Length of the cylinder [mm]
 PATH_FILLET_RADIUS = 0.5 # Radius of the fillet to smooth tip path
 TIP_FILLET_RADIUS = 0.010 # Radius of the bottom of the engraving
 
@@ -39,15 +39,9 @@ def create_triangle_profile(tip_point, next_point):
     tip_x, tip_y, tip_z = tip_point
     _, theta = cart_to_cyl(tip_x, tip_y, tip_z)
     
-    # Create base triangle with tip at the origin, on yz plane    
-    top_x, top_y, top_z = TRI_HEIGHT, 0,  TRI_HEIGHT * math.tan(TRI_ANGLE / 2)
-    bot_x, bot_y, bot_z = TRI_HEIGHT, 0, -TRI_HEIGHT * math.tan(TRI_ANGLE / 2)
-
-    # Rotate triangle around x axis
-    dx, dy, dz = next_point[0] - tip_x, next_point[1] - tip_y, next_point[2] - tip_z
-    angle = -math.atan2(dz, math.sqrt(dx**2 + dy**2))
-    top_y, top_z = -top_z * math.sin(angle), top_z * math.cos(angle)
-    bot_y, bot_z = -top_y, -top_z
+    # Create base triangle with tip at the origin, on yz plane, pointing towards -z   
+    top_x, top_y, top_z =  TRI_HEIGHT * math.tan(TRI_ANGLE / 2), 0, TRI_HEIGHT
+    bot_x, bot_y, bot_z = -TRI_HEIGHT * math.tan(TRI_ANGLE / 2), 0, TRI_HEIGHT
 
     # Rotate the triangle around z axis
     top_x, top_y = top_x * math.cos(theta) - top_y * math.sin(theta), top_x * math.sin(theta) + top_y * math.cos(theta)
@@ -67,7 +61,7 @@ def create_triangle_profile(tip_point, next_point):
     v3 = App.Vector(bot_x, bot_y, bot_z)
     
     wire = Draft.make_wire([v1, v2, v3, v1])
-    wire.FilletRadius = TIP_FILLET_RADIUS
+    # wire.FilletRadius = TIP_FILLET_RADIUS
     return wire
 
 def create_tip_path(points):
@@ -75,7 +69,7 @@ def create_tip_path(points):
     # edges = [Draft.make_line(points[i], points[i+1]) for i in range(len(points)-1)]
     # filleted = round_corners(edges, FILLET_RADIUS)
     path = Draft.make_wire(points)
-    # path.FilletRadius = PATH_FILLET_RADIUS
+    path.FilletRadius = PATH_FILLET_RADIUS
     return path
 
 # def round_corners(edges, radius):
@@ -116,23 +110,23 @@ def engrave_once(file_path, loop_id):
 
     # Create path wire
     path_obj = create_tip_path(points)
-    # path_obj = doc.addObject("Part::Feature", f"Loop_{loop_id}")
+    path_obj = doc.addObject("Part::Feature", f"Loop_{loop_id}")
     # path_obj.Shape = path_wire
 
     # Create triangle profile
-    # profile_obj = create_triangle_profile(points[-1], points[-2])
-    # profile_obj = doc.addObject("Part::Feature", f"Triangle_{loop_id}")
+    profile_obj = create_triangle_profile(points[-1], points[-2])
+    profile_obj = doc.addObject("Part::Feature", f"Triangle_{loop_id}")
     # profile_obj.Shape = profile_wire
 
-    # # Create sweep
-    # sweep_obj = doc.addObject("Part::Sweep", f"Sweep_{loop_id}")
-    # sweep_obj.Sections = [profile_obj]  # Use the document object
-    # sweep_obj.Spine = (path_obj, [])  # Use the document object
-    # sweep_obj.Solid = True
-    # sweep_obj.Frenet = True
-    # sweep_obj.recompute()
+    # Create sweep
+    sweep_obj = doc.addObject("Part::Sweep", f"Sweep_{loop_id}")
+    sweep_obj.Sections = [profile_obj]  # Use the document object
+    sweep_obj.Spine = (path_obj, [])  # Use the document object
+    sweep_obj.Solid = True
+    sweep_obj.Frenet = True
+    sweep_obj.recompute()
 
-    # return sweep_obj
+    return sweep_obj
 
 def engrave_all(folder_path):
     """Create all engraving loops"""
@@ -146,20 +140,20 @@ def engrave_all(folder_path):
             new_sweep = engrave_once(file_path, loop_id=i)
 
             # Merge the new segment with the previous ones
-    #         if whole_sweep:
-    #             fuse_obj = doc.addObject("Part::Fuse", f"MergedSweep_{i}")
-    #             fuse_obj.Base = whole_sweep
-    #             fuse_obj.Tool = new_sweep
-    #             doc.recompute()
-    #             whole_sweep = fuse_obj
-    #         else:
-    #             whole_sweep = new_sweep
+            if whole_sweep:
+                fuse_obj = doc.addObject("Part::Fuse", f"MergedSweep_{i}")
+                fuse_obj.Base = whole_sweep
+                fuse_obj.Tool = new_sweep
+                doc.recompute()
+                whole_sweep = fuse_obj
+            else:
+                whole_sweep = new_sweep
 
-    # # Engrave the cylinder with whole loop
-    # cut_obj = doc.addObject("Part::Cut", f"EngravedCylinder")
-    # cut_obj.Base = doc.getObject("Cylinder")
-    # cut_obj.Tool = whole_sweep
-    # doc.recompute()
+    # Engrave the cylinder with whole loop
+    cut_obj = doc.addObject("Part::Cut", f"EngravedCylinder")
+    cut_obj.Base = doc.getObject("Cylinder")
+    cut_obj.Tool = whole_sweep
+    doc.recompute()
 
 def select_folder():
     """Open folder selection dialog"""
@@ -176,7 +170,7 @@ def main():
     print("-"*10 + " Generating engraved cylinder " + "-"*10)
     
     # Create base cylinder
-    #create_cylinder(CYL_RADIUS, CYL_LENGTH)
+    create_cylinder(CYL_RADIUS, CYL_LENGTH)
     
     # Get folder with CSV files
     folder_path = select_folder()
