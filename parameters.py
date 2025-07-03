@@ -27,7 +27,7 @@ class ParameterSet:
 
     # Image
     pixel_size = 0.01 # Size of a pixel in the image [mm]
-    engraving_pixel_width = round(width / pixel_size) + 2 # Width of the engraving in pixels with a margin of 1 pixel on each side
+    engraving_pixel_width = round(width / pixel_size) # Width of the engraving in pixels with a margin of 1 pixel on each side
     interpolate = True
     white = 255 # Color for the engraving
     black = 0 # Color for the engraving
