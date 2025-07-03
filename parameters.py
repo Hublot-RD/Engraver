@@ -8,7 +8,8 @@ class ParameterSet:
     L = 5.0  # Length [mm]
 
     # Engraving
-    depth = 0.1  # Depth of the cut [mm]
+    ENGRAVING_OUTPUT_TYPE = 'points'  # 'points' or 'image'
+    depth = 0.025  # Depth of the cut [mm]
     angle = 90.0  # Angle of the cut [°]
     pitch = 1 # Pitch of the spiral [mm]
     max_amplitude = 0.025 # Maximal amplitude of the engraved audio signal (peak-peak) [mm]
@@ -17,7 +18,7 @@ class ParameterSet:
     end_margin = 5 # Margin at the start and end of the engraving surface [mm]
     start_pos = 0 # Position of the start of the engraving
     split_files = True # True if the path must be split into multiple files
-    files_per_turn = 6 # Number of files per turn of the cylinder
+    files_per_turn = 20 # Number of files per turn of the cylinder
 
     # Audio
     filter_active = True
@@ -27,7 +28,7 @@ class ParameterSet:
 
     # Folders and file name
     input_folder = "./audio_files/"
-    input_filename = "1000Hz.mp3"
+    input_filename = "200Hz.mp3"
     output_folder = "./3d_files/"
     output_filename = f'{round(depth*1e3)}_{round(max_amplitude*1e3)}_{round(pitch*1e3)}_{input_filename.split(".")[0]}_path'
     
