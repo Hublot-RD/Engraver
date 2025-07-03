@@ -12,18 +12,18 @@ class ParameterSet:
     angle = 90.0  # Angle of the cut [°]
     pitch = 1 # Pitch of the spiral [mm]
     max_amplitude = 0.025 # Maximal amplitude of the engraved audio signal (peak-peak) [mm]
-    speed_angular = 33.5*pi/30 # Rotational speed of a 12" vinyl [rad/s]
+    speed_angular = 33.5/33.5*45*pi/30 # Rotational speed of a 12" vinyl [rad/s]
     speed = speed_angular*150/2 # Longitudinal reading speed of a 12" vinyl at the inner edge [mm/s]
     end_margin = 5 # Margin at the start and end of the engraving surface [mm]
     start_pos = 0 # Position of the start of the engraving
-    split_files = False # True if the path must be split into multiple files
-    files_per_turn = 2 # Number of files per turn of the cylinder
+    split_files = True # True if the path must be split into multiple files
+    files_per_turn = 6 # Number of files per turn of the cylinder
 
     # Audio
     filter_active = True
     cutoff_freq = 5000 # Hz
     start_time = 0 # How many seconds to crop from the start of the audio
-    duration = 0.5 # Duration of the audio signal [s]
+    duration = 2 # Duration of the audio signal [s]
 
     # Folders and file name
     input_folder = "./audio_files/"
