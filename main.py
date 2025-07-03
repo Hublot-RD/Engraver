@@ -84,9 +84,9 @@ def amplitudes_to_cylinder_image(amplitudes, frame_rate):
                         image[y_pixel+dy, x_pixel] = int(min(p.white * distance/(p.width/2), p.white))
             else:
                 # Color 100% black the pixel where the center of the engraving lies, and fade gradually to white
-                image[y_pixel-2:y_pixel+3, x_pixel] = 255*2/3
-                image[y_pixel-1:y_pixel+2, x_pixel] = 255*1/3
-                image[y_pixel, x_pixel]             = 255*0/3
+                image[y_pixel-2:y_pixel+3, x_pixel] = p.white*2/3
+                image[y_pixel-1:y_pixel+2, x_pixel] = p.white*1/3
+                image[y_pixel, x_pixel]             = p.white*0/3
 
     print(f"Path contains {i+1}/{len(amplitudes)} points ({round((i+1)/len(amplitudes)*100,3)} %) from the audio segment.")
 
