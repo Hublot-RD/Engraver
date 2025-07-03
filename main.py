@@ -32,7 +32,7 @@ def amplitudes_to_cylinder_points(amplitudes: np.ndarray, frame_rate: float) -> 
     for i,amp in enumerate(amplitudes):
         radius = p.R-p.depth
         phase = (i) * p.speed_angular/frame_rate
-        elevation = phase*p.pitch/(2*pi) + amp*p.max_amplitude/2 + p.end_margin + p.start_pos
+        elevation = phase*p.pitch/(2*pi) + amp*p.max_amplitude/2 + p.end_margin + p.start_pos + p.offset_from_centerline
 
         x = p.R
         y = radius * phase
@@ -78,7 +78,7 @@ def amplitudes_to_disc_points(amplitudes: np.ndarray, frame_rate: float) -> None
         _, prev_teta, z = path_points[-1]
         
         teta = prev_teta + 2 * asin(p.speed_angular/(2*frame_rate))
-        r = R_max * (1 - teta*p.pitch/(2*pi*(R_max - R_min))) + amp*p.max_amplitude/2
+        r = R_max * (1 - teta*p.pitch/(2*pi*(R_max - R_min))) + amp*p.max_amplitude/2 + p.offset_from_centerline
 
         if r < R_min:
             warnings.warn(f"Engraving stopped by center of disc.")
@@ -124,7 +124,7 @@ def amplitudes_to_cylinder_image(amplitudes: np.ndarray, frame_rate: float) -> N
         phase = (i) * p.speed_angular/frame_rate
 
         x = p.R * phase
-        y = phase*p.pitch/(2*pi) + amp*p.max_amplitude/2 + p.end_margin + p.start_pos
+        y = phase*p.pitch/(2*pi) + amp*p.max_amplitude/2 + p.end_margin + p.start_pos + p.offset_from_centerline
         if y > p.L - p.end_margin:
             warnings.warn(f"Engraving stopped by end of cylinder.")
             break
@@ -191,12 +191,12 @@ def amplitudes_to_disc_image(amplitudes: np.ndarray, frame_rate: float) -> None:
     # Color the pixel in the image
     path_points = []
     R_max, _ = p.R - p.end_margin - p.start_pos, p.end_margin
-    path_points.append((R_max, 0))
+    path_points.append((R_max + p.offset_from_centerline, 0))
     for _,amp in enumerate(amplitudes):
         _, prev_teta = path_points[-1]
         
         teta = prev_teta + 2 * asin(p.speed_angular/(2*frame_rate))
-        r = R_max * (1 - teta*p.pitch/(2*pi*R_max)) + amp*p.max_amplitude/2
+        r = R_max * (1 - teta*p.pitch/(2*pi*R_max)) + amp*p.max_amplitude/2 + p.offset_from_centerline
 
         path_points.append((r, teta))
 
