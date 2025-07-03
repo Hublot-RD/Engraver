@@ -261,7 +261,7 @@ def create_tip_path_wire(tip_path: list[tuple[float, float, float]], filename: s
     wire = wire_builder.Wire()
     
     # Export the result to a STEP file
-    export_shape_to_step(wire, filename)
+#     export_shape_to_step(wire, filename)
 
 
 # Example usage

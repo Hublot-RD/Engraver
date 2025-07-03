@@ -2,28 +2,30 @@ from math import pi, tan, radians
 from datetime import date
 
 class ParameterSet:
-    # Cylinder
+    # Surface
+    SURFACE_TYPE = 'disc'  # 'cylinder' or 'disc'
     R = 53.0/2  # Radius [mm]
-    L = 125.0  # Length [mm]
+    L = 5.0  # Length [mm]
 
     # Engraving
+    ENGRAVING_OUTPUT_TYPE = 'points'  # 'points' or 'image'
     depth = 0.025  # Depth of the cut [mm]
     angle = 90.0  # Angle of the cut [°]
     width = 2 * depth * tan(radians(angle/2))  # Width of the cut [mm]
     pitch = 1 # Pitch of the spiral [mm]
     max_amplitude = 0.025 # Maximal amplitude of the engraved audio signal (peak-peak) [mm]
-    speed = 33.5*pi/30*150/2 # Longitudinal reading speed of a 12" vinyl at the inner edge [mm/s]
-    speed_angular = speed / R
-    end_margin = 5 # Margin at the start and end of the cylinder [mm]
+    speed_angular = 33.5/33.5*45*pi/30 # Rotational speed of a 12" vinyl [rad/s]
+    speed = speed_angular*150/2 # Longitudinal reading speed of a 12" vinyl at the inner edge [mm/s]
+    end_margin = 5 # Margin at the start and end of the engraving surface [mm]
     start_pos = 0 # Position of the start of the engraving
-    split_files = False # True if the path must be split into multiple files
-    files_per_turn = 2 # Number of files per turn of the cylinder
+    split_files = True # True if the path must be split into multiple files
+    files_per_turn = 20 # Number of files per turn of the cylinder
 
     # Audio
     filter_active = False
     cutoff_freq = 5000 # Hz
     start_time = 0 # How many seconds to crop from the start of the audio
-    duration = 5 # Duration of the audio signal [s]
+    duration = 2 # Duration of the audio signal [s]
 
     # Image
     pixel_size = 0.01 # Size of a pixel in the image [mm]

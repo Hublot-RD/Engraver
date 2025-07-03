@@ -174,11 +174,12 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 
-# 3D object files
+# 2D/3D object files
 *.stp
 *.step
 *.igs
 *.iges
+*.dxf
 *.FCStd
 *.SLDPRT
 *.csv

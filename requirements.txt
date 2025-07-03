@@ -1,3 +1,4 @@
-pythonocc-core
+numpy
 pydub
 scipy
+pythonocc-core
