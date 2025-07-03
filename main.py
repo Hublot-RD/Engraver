@@ -8,7 +8,25 @@ from parameters import default_parameters as p
 from geometry import cyl2cart
 
 
-def amplitudes_to_cylinder_points(amplitudes, frame_rate):
+def amplitudes_to_cylinder_points(amplitudes: np.ndarray, frame_rate: float) -> None:
+    """
+    Convert a series of sound amplitudes to a list of points on a cylinder.
+    
+    The points are calculated based on the parameters defined in the `parameters.py` file.
+    The points are then exported to a CSV file.
+
+
+    Parameters
+    ----------
+    amplitudes : np.ndarray
+        Array of sound amplitudes.
+    frame_rate : float
+        Frame rate of the audio signal in Hz.
+        
+    Returns
+    -------
+    None
+    """
     path_points_cyl = []
     path_points_plane = []
     for i,amp in enumerate(amplitudes):
@@ -34,7 +52,25 @@ def amplitudes_to_cylinder_points(amplitudes, frame_rate):
     export_path_to_csv(path_points_cyl, p.output_folder+p.output_filename+'_cyl', split_files=p.split_files, files_per_turn=p.files_per_turn, cyl_coord=True)
     # export_path_to_csv(path_points_plane, p.output_folder+p.output_filename+'_plan', split_files=p.split_files, files_per_turn=p.files_per_turn, cyl_coord=False)
 
-def amplitudes_to_disc_points(amplitudes, frame_rate):
+def amplitudes_to_disc_points(amplitudes: np.ndarray, frame_rate: float) -> None:
+    """
+    Convert a series of sound amplitudes to a list of points on a disc.
+    
+    The points are calculated based on the parameters defined in the `parameters.py` file.
+    The points are then exported to a CSV file.
+
+
+    Parameters
+    ----------
+    amplitudes : np.ndarray
+        Array of sound amplitudes.
+    frame_rate : float
+        Frame rate of the audio signal in Hz.
+        
+    Returns
+    -------
+    None
+    """
     path_points = []
     R_max, R_min = p.R - p.end_margin - p.start_pos, p.end_margin
     path_points.append((R_max, 0, p.L-p.depth))
@@ -59,7 +95,26 @@ def amplitudes_to_disc_points(amplitudes, frame_rate):
     export_path_to_csv(path_points, out_name, split_files=p.split_files, files_per_turn=p.files_per_turn, cyl_coord=True)
     print(f"Exported file to {out_name}.")
 
-def amplitudes_to_cylinder_image(amplitudes, frame_rate):
+def amplitudes_to_cylinder_image(amplitudes: np.ndarray, frame_rate: float) -> None:
+    """
+    Convert a series of sound amplitudes to a depth map on a cylinder.
+    
+    The depth map is represented as a 2D image, where each pixel corresponds to a point on the cylinder developped surface.
+    The pixel color is calculated based on the parameters defined in the `parameters.py` file.
+    The image is then exported in TIFF format, without compression.
+
+
+    Parameters
+    ----------
+    amplitudes : np.ndarray
+        Array of sound amplitudes.
+    frame_rate : float
+        Frame rate of the audio signal in Hz.
+        
+    Returns
+    -------
+    None
+    """
     # Create blank image
     img_height, img_width = int(p.L / p.pixel_size), int(2 * p.R * np.pi / p.pixel_size)
     image = p.white * np.ones((img_height, img_width), dtype=np.uint8)
@@ -103,7 +158,26 @@ def amplitudes_to_cylinder_image(amplitudes, frame_rate):
                                 software="Python 3",
                                 )
 
-def amplitudes_to_disc_image(amplitudes, frame_rate):
+def amplitudes_to_disc_image(amplitudes: np.ndarray, frame_rate: float) -> None:
+    """
+    Convert a series of sound amplitudes to a depth map on a disc.
+    
+    The depth map is represented as a 2D image, where each pixel corresponds to a point on the disc.
+    The pixel color is calculated based on the parameters defined in the `parameters.py` file.
+    The image is then exported in TIFF format, without compression.
+
+
+    Parameters
+    ----------
+    amplitudes : np.ndarray
+        Array of sound amplitudes.
+    frame_rate : float
+        Frame rate of the audio signal in Hz.
+
+    Returns
+    -------
+    None
+    """
     # Create blank image (square)
     img_side = int(2 * p.R / p.pixel_size)
     center = int(img_side / 2)
@@ -118,7 +192,7 @@ def amplitudes_to_disc_image(amplitudes, frame_rate):
     path_points = []
     R_max, _ = p.R - p.end_margin - p.start_pos, p.end_margin
     path_points.append((R_max, 0))
-    for i,amp in enumerate(amplitudes):
+    for _,amp in enumerate(amplitudes):
         _, prev_teta = path_points[-1]
         
         teta = prev_teta + 2 * asin(p.speed_angular/(2*frame_rate))
@@ -154,6 +228,8 @@ def amplitudes_to_disc_image(amplitudes, frame_rate):
                                 software="Python 3",
                                 )
 
+
+# Usage
 if __name__ == "__main__":
     # Extract amplitudes from audio
     amplitudes, frame_rate, *_ = mp3_to_amplitude_series(p.input_folder+p.input_filename, channels='left', start_time=p.start_time, duration=p.duration)
@@ -161,7 +237,6 @@ if __name__ == "__main__":
         amplitudes, frame_rate = apply_low_pass_filter(amplitudes, frame_rate, cutoff_freq=p.cutoff_freq, downsample=True)
 
     # Convert amplitudes to engraving file
-
     if p.ENGRAVING_OUTPUT_TYPE == 'points':
         if p.SURFACE_TYPE == 'cylinder':
             amplitudes_to_cylinder_points(amplitudes, frame_rate)
