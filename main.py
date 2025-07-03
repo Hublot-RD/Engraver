@@ -3,6 +3,7 @@ import numpy as np
 from PIL import Image
 import warnings
 from audio_processor import mp3_to_amplitude_series, apply_low_pass_filter
+from builder3d import export_path_to_csv
 from parameters import default_parameters as p
 from geometry import cyl2cart
 
@@ -115,7 +116,7 @@ def amplitudes_to_disc_image(amplitudes, frame_rate):
 
     # Color the pixel in the image
     path_points = []
-    R_max, R_min = p.R - p.end_margin - p.start_pos, p.end_margin
+    R_max, _ = p.R - p.end_margin - p.start_pos, p.end_margin
     path_points.append((R_max, 0))
     for i,amp in enumerate(amplitudes):
         _, prev_teta = path_points[-1]
@@ -123,23 +124,23 @@ def amplitudes_to_disc_image(amplitudes, frame_rate):
         teta = prev_teta + 2 * asin(p.speed_angular/(2*frame_rate))
         r = R_max * (1 - teta*p.pitch/(2*pi*R_max)) + amp*p.max_amplitude/2
 
-            path_points.append((r, teta))
+        path_points.append((r, teta))
 
-            x, y, _ = cyl2cart(r, teta, 0)
-            x_pixel_exact, y_pixel_exact = x / p.pixel_size + center, y / p.pixel_size + center
-            x_pixel_approx, y_pixel_approx = int(x_pixel_exact), int(y_pixel_exact)
-            if p.interpolate:
-                # Color according to the distance to the center of the engraving
-                for j in range(p.engraving_pixel_width):
-                    for k in range(p.engraving_pixel_width):
-                        dx, dy = j - p.engraving_pixel_width//2, k - p.engraving_pixel_width//2
-                        if 0 <= int(x_pixel_exact)+dx < img_side and 0 <= int(y_pixel_exact)+dy < img_side:
-                            x_currpixel_center = (x_pixel_approx+dx + 0.5 - center) * p.pixel_size
-                            y_currpixel_center = (y_pixel_approx+dy + 0.5 - center) * p.pixel_size
-                            distance = hypot(x-x_currpixel_center, y - y_currpixel_center)
-                            image[y_pixel_approx+dy, x_pixel_approx+dx] = int(min(p.white * distance/(p.width/2), image[int(y_pixel_exact)+dy, int(x_pixel_exact)+dx]))
-            else:
-                raise NotImplementedError
+        x, y, _ = cyl2cart(r, teta, 0)
+        x_pixel_exact, y_pixel_exact = x / p.pixel_size + center, y / p.pixel_size + center
+        x_pixel_approx, y_pixel_approx = int(x_pixel_exact), int(y_pixel_exact)
+        if p.interpolate:
+            # Color according to the distance to the center of the engraving
+            for j in range(p.engraving_pixel_width):
+                for k in range(p.engraving_pixel_width):
+                    dx, dy = j - p.engraving_pixel_width//2, k - p.engraving_pixel_width//2
+                    if 0 <= int(x_pixel_exact)+dx < img_side and 0 <= int(y_pixel_exact)+dy < img_side:
+                        x_currpixel_center = (x_pixel_approx+dx + 0.5 - center) * p.pixel_size
+                        y_currpixel_center = (y_pixel_approx+dy + 0.5 - center) * p.pixel_size
+                        distance = hypot(x-x_currpixel_center, y - y_currpixel_center)
+                        image[y_pixel_approx+dy, x_pixel_approx+dx] = int(min(p.white * distance/(p.width/2), image[int(y_pixel_exact)+dy, int(x_pixel_exact)+dx]))
+        else:
+            raise NotImplementedError
 
     # Save the image
     Image.fromarray(image).save(p.output_folder+p.output_filename+".tiff", 
