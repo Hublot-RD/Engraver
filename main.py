@@ -73,7 +73,7 @@ def amplitudes_to_disc_points(amplitudes: np.ndarray, frame_rate: float) -> None
     """
     path_points = []
     R_max, R_min = p.R - p.end_margin - p.start_pos, p.end_margin
-    path_points.append((R_max, 0, p.L-p.depth))
+    path_points.append((R_max+p.offset_from_centerline, 0, p.L-p.depth))
     for i,amp in enumerate(amplitudes):
         _, prev_teta, z = path_points[-1]
         
