@@ -8,7 +8,7 @@ class ParameterSet:
     L = 5.0  # Length [mm]
 
     # Engraving
-    ENGRAVING_OUTPUT_TYPE = 'points'  # 'points' or 'image'
+    ENGRAVING_OUTPUT_TYPE = 'image'  # 'points' or 'image'
     depth = 0.025  # Depth of the cut [mm]
     angle = 90.0  # Angle of the cut [°]
     width = 2 * depth * tan(radians(angle/2))  # Width of the cut [mm]
@@ -20,10 +20,10 @@ class ParameterSet:
     start_pos = 0 # Position of the start of the engraving
     split_files = False # True if the path must be split into multiple files
     files_per_turn = 20 # Number of files per turn of the cylinder
-    offset_from_centerline = 0 #width/2 # Used to create the path of the corner of the triangle on the surface [mm]
+    offset_from_centerline = 0 #-width/2 # Used to create the path of the corner of the triangle on the surface [mm]
 
     # Audio
-    filter_active = False
+    filter_active = True
     cutoff_freq = 5000 # Hz
     start_time = 1 # How many seconds to crop from the start of the audio
     duration = 0.1 # Duration of the audio signal [s]

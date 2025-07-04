@@ -73,8 +73,8 @@ def amplitudes_to_disc_points(amplitudes: np.ndarray, frame_rate: float) -> None
     """
     path_points = []
     R_max, R_min = p.R - p.end_margin - p.start_pos, p.end_margin
-    path_points.append((R_max+p.offset_from_centerline, 0, p.L-p.depth))
-    for i,amp in enumerate(amplitudes):
+    path_points.append((R_max+p.offset_from_centerline+amplitudes[0]*p.max_amplitude/2, 0, p.L-p.depth))
+    for i,amp in enumerate(amplitudes[1:]):
         _, prev_teta, z = path_points[-1]
         
         teta = prev_teta + 2 * asin(p.speed_angular/(2*frame_rate))
@@ -191,7 +191,7 @@ def amplitudes_to_disc_image(amplitudes: np.ndarray, frame_rate: float) -> None:
     # Color the pixel in the image
     path_points = []
     R_max, _ = p.R - p.end_margin - p.start_pos, p.end_margin
-    path_points.append((R_max + p.offset_from_centerline, 0))
+    path_points.append((R_max+p.offset_from_centerline+amplitudes[0]*p.max_amplitude/2, 0))
     for _,amp in enumerate(amplitudes):
         _, prev_teta = path_points[-1]
         
