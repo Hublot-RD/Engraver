@@ -5,10 +5,10 @@ class ParameterSet:
     # Surface
     SURFACE_TYPE = 'disc'  # 'cylinder' or 'disc'
     R = 53.0/2  # Radius [mm]
-    L = 5.0  # Length [mm]
+    L = 125.0  # Length [mm]
 
     # Engraving
-    ENGRAVING_OUTPUT_TYPE = 'image'  # 'points' or 'image'
+    ENGRAVING_OUTPUT_TYPE = 'gcode'  # 'points', 'image' or 'gcode
     depth = 0.025  # Depth of the cut [mm]
     angle = 90.0  # Angle of the cut [°]
     width = 2 * depth * tan(radians(angle/2))  # Width of the cut [mm]
@@ -24,7 +24,7 @@ class ParameterSet:
 
     # Audio
     filter_active = True
-    cutoff_freq = 5000 # Hz
+    cutoff_freq = 3000 # Hz
     start_time = 1 # How many seconds to crop from the start of the audio
     duration = 0.1 # Duration of the audio signal [s]
 
@@ -40,7 +40,44 @@ class ParameterSet:
     input_filename = "1000Hz.mp3"
     output_folder = "./3d_files/" # "images" or "3d_files"
     output_filename = f'{round(depth*1e3)}_{round(max_amplitude*1e3)}_{round(pitch*1e3)}_{input_filename.split(".")[0]}_path'
-    
+
+    # G-code
+    feed_rate = 50.0 # [mm/min]
+    spindle_speed = 6366 # [rpm]
+    clearance = 5.0 # [mm]
+    tool_number = 19
+    corrector_number = 19
+    file_format = "iso"
+    INITIAL_GCODE = f"""
+%
+O0001 ({output_filename})
+( PART NAME : {output_filename} )
+( MACH TYPE : Fraiseuse vert. 4 axes )
+( POST TYPE : Fraisage 4axes Fanuc 0iM.GCv11 )
+( {date.today()} )
+( OUTPUT IN ABSOLUTE MILLIMETERS )
+G21
+G53Z0.
+G49
+G17G80G40G94
+M6T{tool_number}
+G90G54
+M11
+G0X{round(end_margin + start_pos + offset_from_centerline,3)}Y0.A0.
+G43Z150.H{corrector_number}M13S{round(spindle_speed, 0)}
+G0Z{round(R-depth+clearance,3)}
+G1Z{round(R-depth,3)}F{round(feed_rate,3)}"""
+    FINAL_GCODE = f"""
+G0Z{round(R-depth+clearance,3)}
+G0Z150.
+G49G53Z0.
+M15
+G53Z0.
+M30
+%
+"""
+
+
     def __init__(self) -> None:
         pass
 
