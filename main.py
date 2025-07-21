@@ -228,6 +228,26 @@ def amplitudes_to_disc_image(amplitudes: np.ndarray, frame_rate: float) -> None:
                                 software="Python 3",
                                 )
 
+def amplitudes_to_gcode(amplitudes: np.ndarray, frame_rate: float) -> None:
+    """
+    Convert a series of sound amplitudes to G-code for engraving on a cylinder.
+    
+    The G-code is generated based on the parameters defined in the `parameters.py` file.
+    The G-code is then exported to a file.
+
+    Parameters
+    ----------
+    amplitudes : np.ndarray
+        Array of sound amplitudes.
+    frame_rate : float
+        Frame rate of the audio signal in Hz.
+
+    Returns
+    -------
+    None
+    """
+    raise NotImplementedError("G-code generation is not implemented yet.")
+
 
 # Usage
 if __name__ == "__main__":
