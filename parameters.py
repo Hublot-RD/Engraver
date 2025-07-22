@@ -12,7 +12,7 @@ class ParameterSet:
     depth = 0.025  # Depth of the cut [mm]
     angle = 90.0  # Angle of the cut [°]
     width = 2 * depth * tan(radians(angle/2))  # Width of the cut [mm]
-    pitch = 1 # Pitch of the spiral [mm]
+    pitch = 1.0 # Pitch of the spiral [mm]
     max_amplitude = 0.025 # Maximal amplitude of the engraved audio signal (peak-peak) [mm]
     speed_angular = 33.5/33.5*45*pi/30 # Rotational speed of a 12" vinyl [rad/s]
     speed = speed_angular*150/2 # Longitudinal reading speed of a 12" vinyl at the inner edge [mm/s]
@@ -24,9 +24,9 @@ class ParameterSet:
 
     # Audio
     filter_active = True
-    cutoff_freq = 3000 # Hz
+    cutoff_freq = 5000 # Hz
     start_time = 1 # How many seconds to crop from the start of the audio
-    duration = 0.1 # Duration of the audio signal [s]
+    duration = 1 # Duration of the audio signal [s]
 
     # Image
     pixel_size = 0.01 # Size of a pixel in the image [mm]
@@ -65,7 +65,7 @@ G90G54
 M11
 G0X{round(end_margin + start_pos + offset_from_centerline,3)}Y0.A0.
 G43Z150.H{corrector_number}M13S{round(spindle_speed, 0)}
-G0Z{round(R-depth+clearance,3)}
+G0Z{round(R+clearance,3)}
 G1Z{round(R-depth,3)}F{round(feed_rate,3)}"""
     FINAL_GCODE = f"""
 G0Z{round(R-depth+clearance,3)}

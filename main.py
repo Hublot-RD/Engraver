@@ -1,4 +1,4 @@
-from math import pi, asin, hypot
+from math import pi, asin, hypot, sin, sqrt
 import numpy as np
 from PIL import Image
 import warnings
@@ -250,16 +250,22 @@ def amplitudes_to_gcode(amplitudes: np.ndarray, frame_rate: float) -> None:
     text = p.INITIAL_GCODE
 
     # Engraving g-code blocks
+    total_length = 0
     for i,amp in enumerate(amplitudes):
+        # Compute point
         phase = (i) * p.speed_angular/frame_rate
         elevation = phase*p.pitch/(2*pi) + amp*p.max_amplitude/2 + p.end_margin + p.start_pos + p.offset_from_centerline
-
+        
+        # Compute length of segment
+        dphase = p.speed_angular/frame_rate
+        dl = sqrt((sin(dphase) * (p.R-p.depth))**2 + (dphase*p.pitch/(2*pi) + amp*p.max_amplitude/2)**2)
         if elevation > p.L - p.end_margin:
             warnings.warn(f"Engraving stopped by end of cylinder.")
             break
         else:
-            line = f"\nX{round(elevation, 3)}A{round(phase, 3)}"
+            line = f"\nX{round(elevation, 3)}A{round(np.rad2deg(phase), 3)}"
             text += line
+            total_length += dl
 
     # Finalisation g-code blocks
     text += p.FINAL_GCODE
@@ -268,6 +274,8 @@ def amplitudes_to_gcode(amplitudes: np.ndarray, frame_rate: float) -> None:
     with open(p.output_folder+p.output_filename+"."+p.file_format, 'w') as f:
         f.write(text)
     print(f"G-code exported to {p.output_folder+p.output_filename}.{p.file_format}")
+    print(f"Total engraving length: {total_length:.3f} mm")
+    print(f"Approximate machining time: {total_length / p.feed_rate:.2f} min")
 
 # Usage
 if __name__ == "__main__":
