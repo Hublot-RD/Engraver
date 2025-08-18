@@ -22,6 +22,7 @@ class ParameterSet:
     files_per_turn = 20 # Number of files per turn of the cylinder
     offset_from_centerline = 0 #-width/2 # Used to create the path of the corner of the triangle on the surface [mm]
     intersection_margin = 0.010 # Margin
+    right_thread = True # True if the engraving spiral is right threaded, otherwise left threaded
 
     # Audio
     filter_active = True

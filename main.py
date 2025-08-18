@@ -290,8 +290,9 @@ def amplitudes_to_gcode(amplitudes: np.ndarray, frame_rate: float) -> None:
     points = []
     for i,amp in enumerate(amplitudes):
         # Compute point
-        phase = -(i) * p.speed/p.R / frame_rate
+        phase = (i) * p.speed/p.R / frame_rate
         elevation = phase*p.pitch/(2*pi) + amp*p.max_amplitude/2 + p.end_margin + p.start_pos + p.offset_from_centerline
+        if p.right_thread: phase = -phase
         points.append([phase, elevation]) 
 
         # Compute length of segment
