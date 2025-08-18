@@ -14,19 +14,20 @@ class ParameterSet:
     width = 2 * depth * tan(radians(angle/2))  # Width of the cut [mm]
     pitch = 0.25 # Pitch of the spiral [mm]
     max_amplitude = 0.100 # Maximal amplitude of the engraved audio signal (peak-peak) [mm]
-    speed_angular = 28.30 # Rotational speed the cylinder [rad/s]
+    speed_angular = 11.32 # Rotational speed the cylinder [rad/s]
     speed = speed_angular*R # Longitudinal reading speed of the tip in the engraving [mm/s]
     end_margin = 0 # Margin at the start and end of the engraving surface [mm]
     start_pos = 0 # Position of the start of the engraving
     split_files = True # True if the path must be split into multiple files
     files_per_turn = 20 # Number of files per turn of the cylinder
     offset_from_centerline = 0 #-width/2 # Used to create the path of the corner of the triangle on the surface [mm]
+    intersection_margin = 0.010 # Margin
 
     # Audio
     filter_active = True
     cutoff_freq = 3000 # Hz
     start_time = 0 # How many seconds to crop from the start of the audio
-    duration = 2.0 # Duration of the audio signal [s]
+    duration = 4.0 # Duration of the audio signal [s]
 
     # Image
     pixel_size = 0.01 # Size of a pixel in the image [mm]
@@ -37,7 +38,7 @@ class ParameterSet:
 
     # Folders and file name
     input_folder = "./audio_files/"
-    input_filename = "scale_cdef.mp3"
+    input_filename = "squeezie.mp3"
     output_folder = "./3d_files/" # "images" or "3d_files"
     output_filename = f'{round(depth*1e3)}_{round(max_amplitude*1e3)}_{round(pitch*1e3)}_{input_filename.split(".")[0]}_path'
 
