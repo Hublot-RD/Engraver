@@ -261,7 +261,8 @@ def check_intersection(pts: np.ndarray, frame_rate: float) -> int:
                 intersections += 1
                 if intersections >= 1: 
                     warnings.warn(f"Engraving path intersects itself at least at angle {round(np.rad2deg(pts[i, 0]) % 360, 2)}°, loop {k+1}&{k+2}. \t{curr_pts_elev}")
-                    print(curr_pts_elev)
+                warnings.warn(f"Engraving path intersects itself at least at angle {round(np.rad2deg(pts[i, 0]) % 360, 2)}°, loop {k+1}&{k+2}. \t{curr_pts_elev}")
+                print(curr_pts_elev)
     return intersections
 
 def amplitudes_to_gcode(amplitudes: np.ndarray, frame_rate: float) -> None:
