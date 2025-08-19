@@ -12,7 +12,7 @@ class ParameterSet:
     depth = 0.025  # Depth of the cut [mm]
     angle = 90.0  # Angle of the cut [°]
     width = 2 * depth * tan(radians(angle/2))  # Width of the cut [mm]
-    pitch = 0.25 # Pitch of the spiral [mm]
+    pitch = 0.5 # Pitch of the spiral [mm]
     max_amplitude = 0.100 # Maximal amplitude of the engraved audio signal (peak-peak) [mm]
     speed_angular = 11.32 # Rotational speed the cylinder [rad/s]
     speed = speed_angular*R # Longitudinal reading speed of the tip in the engraving [mm/s]
@@ -23,12 +23,13 @@ class ParameterSet:
     offset_from_centerline = 0 #-width/2 # Used to create the path of the corner of the triangle on the surface [mm]
     intersection_margin = 0.010 # Margin
     right_thread = True # True if the engraving spiral is right threaded, otherwise left threaded
-
+    
     # Audio
     filter_active = True
     cutoff_freq = 3000 # Hz
     start_time = 0 # How many seconds to crop from the start of the audio
     duration = 4.0 # Duration of the audio signal [s]
+    silent_start_duration = 1.0 # Duration of the silent start [s]
 
     # Image
     pixel_size = 0.01 # Size of a pixel in the image [mm]

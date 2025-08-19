@@ -2,7 +2,7 @@ from math import pi, asin, hypot, sin, sqrt, floor
 import numpy as np
 from PIL import Image
 import warnings
-from audio_processor import mp3_to_amplitude_series, apply_low_pass_filter
+from audio_processor import add_silent_start, mp3_to_amplitude_series, apply_low_pass_filter
 from builder3d import export_path_to_csv
 from parameters import default_parameters as p
 from geometry import cyl2cart
@@ -324,6 +324,8 @@ if __name__ == "__main__":
     amplitudes, frame_rate, *_ = mp3_to_amplitude_series(p.input_folder+p.input_filename, channels='left', start_time=p.start_time, duration=p.duration)
     if p.filter_active:
         amplitudes, frame_rate = apply_low_pass_filter(amplitudes, frame_rate, cutoff_freq=p.cutoff_freq, downsample=True)
+
+    amplitudes = add_silent_start(amplitudes, frame_rate, duration=p.silent_start_duration)
 
     # Convert amplitudes to engraving file
     if p.ENGRAVING_OUTPUT_TYPE == 'points':

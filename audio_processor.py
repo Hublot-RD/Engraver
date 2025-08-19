@@ -112,7 +112,20 @@ def export_to_mp3(amplitude_series: np.ndarray, frame_rate: float, sample_width:
     
     # Export the AudioSegment to an MP3 file
     audio_segment.export(output_file_path, format="mp3")
-    
+
+def add_silent_start(amplitude_series: np.ndarray, frame_rate: float, duration: float) -> np.ndarray:
+    """
+    Add a silent start to the audio signal.
+
+    :param amplitude_series: A numpy array of audio amplitude values.
+    :param frame_rate: The frame rate of the audio.
+    :param duration: The duration of the silent start in seconds.
+    :return: A numpy array of audio amplitude values with the silent start added.
+    """
+    # Calculate the number of samples to add
+    num_samples = int(frame_rate * duration)
+    silent_start = np.zeros(num_samples)
+    return np.concatenate([silent_start, amplitude_series])
 
 # Example usage
 if __name__ == "__main__":
