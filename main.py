@@ -345,7 +345,7 @@ if __name__ == "__main__":
     elif p.ENGRAVING_OUTPUT_TYPE == "gcode":
         amplitudes_to_gcode(amplitudes, frame_rate)
     else:
-        raise ValueError(f"Unknown engraving output type: {p.ENGRAVING_OUTPUT_TYPE}. Please choose 'points' or 'image'.")
+        raise ValueError(f"Unknown engraving output type: {p.ENGRAVING_OUTPUT_TYPE}. Please choose 'points', 'image', or 'gcode'.")
     
     # Export parameters to a text file
     with open(p.output_folder+p.output_filename+"_parameters.txt", 'w') as f:
