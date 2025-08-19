@@ -8,7 +8,7 @@ class ParameterSet:
     L = 125.0  # Length [mm]
 
     # Engraving
-    ENGRAVING_OUTPUT_TYPE = 'gcode'  # 'points', 'image' or 'gcode
+    ENGRAVING_OUTPUT_TYPE = 'gcode'  # 'points', 'image' or 'gcode'
     depth = 0.025  # Depth of the cut [mm]
     angle = 90.0  # Angle of the cut [°]
     width = 2 * depth * tan(radians(angle/2))  # Width of the cut [mm]
