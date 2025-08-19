@@ -1,8 +1,8 @@
-from math import pi, asin, hypot
+from math import pi, asin, hypot, sin, sqrt, floor
 import numpy as np
 from PIL import Image
 import warnings
-from audio_processor import mp3_to_amplitude_series, apply_low_pass_filter
+from audio_processor import add_silent_start, mp3_to_amplitude_series, apply_low_pass_filter
 from builder3d import export_path_to_csv
 from parameters import default_parameters as p
 from geometry import cyl2cart
@@ -227,7 +227,97 @@ def amplitudes_to_disc_image(amplitudes: np.ndarray, frame_rate: float) -> None:
                                 copyright="Hublot SA",
                                 software="Python 3",
                                 )
+    
+def check_intersection(pts: np.ndarray, frame_rate: float) -> int:
+    """
+    Check if the engraving path intersects itself.
+    
+    This function is used to ensure that the engraving path does not overlap itself,
+    which could lead to issues during the reading process. If such overlap occurs, it counts
+    the number of intersections.
 
+    Parameters
+    ----------
+    pts : np.ndarray
+        Array of engraving points, in polar coordinates. [phase in rad, elevation]
+    frame_rate : float
+        Frame rate of the audio signal in Hz.
+
+    Returns
+    -------
+    Number of detected intersections.
+    """
+    intersections = 0
+    pts_per_turn = 2 * np.pi * p.R / p.speed * frame_rate
+    nb_turns = floor(pts[-1, 0] / (2 * np.pi))
+
+    # For each "angle", check if engraving points X coord. are strictly increasing with enough margin 
+    for i in range(int(pts_per_turn)):
+        curr_pts_elev = [pts[int(min(j*pts_per_turn+i, pts.shape[0]-1)) , 1] for j in range(nb_turns)]
+
+        # Check that the elevation is strictly increasing
+        for k in range(len(curr_pts_elev)-1):
+            if curr_pts_elev[k+1] - curr_pts_elev[k] <= p.width + p.intersection_margin:
+                intersections += 1
+                if intersections >= 1: 
+                    warnings.warn(f"Engraving path intersects itself at least at angle {round(np.rad2deg(pts[i, 0]) % 360, 2)}°, loop {k+1}&{k+2}. \t{curr_pts_elev}")
+                warnings.warn(f"Engraving path intersects itself at least at angle {round(np.rad2deg(pts[i, 0]) % 360, 2)}°, loop {k+1}&{k+2}. \t{curr_pts_elev}")
+                print(curr_pts_elev)
+    return intersections
+
+def amplitudes_to_gcode(amplitudes: np.ndarray, frame_rate: float) -> None:
+    """
+    Convert a series of sound amplitudes to G-code for engraving on a cylinder.
+    
+    The G-code is generated based on the parameters defined in the `parameters.py` file.
+    The G-code is then exported to a file.
+
+    Parameters
+    ----------
+    amplitudes : np.ndarray
+        Array of sound amplitudes.
+    frame_rate : float
+        Frame rate of the audio signal in Hz.
+
+    Returns
+    -------
+    None
+    """
+    # Initialisation g-code blocks 
+    text = p.INITIAL_GCODE
+
+    # Engraving g-code blocks
+    total_length = 0
+    points = []
+    for i,amp in enumerate(amplitudes):
+        # Compute point
+        phase = (i) * p.speed/p.R / frame_rate
+        elevation = phase*p.pitch/(2*pi) + amp*p.max_amplitude/2 + p.end_margin + p.start_pos + p.offset_from_centerline
+        if p.right_thread: phase = -phase
+        points.append([phase, elevation]) 
+
+        # Compute length of segment
+        dphase = p.speed_angular/frame_rate
+        dl = sqrt((sin(dphase) * (p.R-p.depth))**2 + (dphase*p.pitch/(2*pi) + amp*p.max_amplitude/2)**2)
+        if elevation > p.L - p.end_margin:
+            warnings.warn(f"Engraving stopped by end of cylinder.")
+            break
+        else:
+            line = f"\nX{round(elevation, 3)}A{round(np.rad2deg(phase), 3)}"
+            text += line
+            total_length += dl
+
+    check_intersection(np.array(points), frame_rate)
+    
+    # Finalisation g-code blocks
+    text += p.FINAL_GCODE
+
+    # Export G-code to a file
+    with open(p.output_folder+p.output_filename+"."+p.file_format, 'w') as f:
+        f.write(text)
+    print(f"G-code exported to {p.output_folder+p.output_filename}.{p.file_format}")
+    print(f"Total engraving length: {total_length:.3f} mm")
+    print(f"Approximate machining time: {total_length / p.feed_rate:.2f} min")
 
 # Usage
 if __name__ == "__main__":
@@ -235,6 +325,8 @@ if __name__ == "__main__":
     amplitudes, frame_rate, *_ = mp3_to_amplitude_series(p.input_folder+p.input_filename, channels='left', start_time=p.start_time, duration=p.duration)
     if p.filter_active:
         amplitudes, frame_rate = apply_low_pass_filter(amplitudes, frame_rate, cutoff_freq=p.cutoff_freq, downsample=True)
+
+    amplitudes = add_silent_start(amplitudes, frame_rate, duration=p.silent_start_duration)
 
     # Convert amplitudes to engraving file
     if p.ENGRAVING_OUTPUT_TYPE == 'points':
@@ -251,8 +343,10 @@ if __name__ == "__main__":
             amplitudes_to_disc_image(amplitudes, frame_rate)
         else:
             raise ValueError(f"Unknown surface type: {p.SURFACE_TYPE}. Please choose 'cylinder' or 'disc'.")
+    elif p.ENGRAVING_OUTPUT_TYPE == "gcode":
+        amplitudes_to_gcode(amplitudes, frame_rate)
     else:
-        raise ValueError(f"Unknown engraving output type: {p.ENGRAVING_OUTPUT_TYPE}. Please choose 'points' or 'image'.")
+        raise ValueError(f"Unknown engraving output type: {p.ENGRAVING_OUTPUT_TYPE}. Please choose 'points', 'image', or 'gcode'.")
     
     # Export parameters to a text file
     with open(p.output_folder+p.output_filename+"_parameters.txt", 'w') as f:

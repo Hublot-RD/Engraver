@@ -80,6 +80,8 @@ def apply_low_pass_filter(amplitude_series: np.ndarray, frame_rate: float, cutof
         nb_samples = int(len(filtered_amplitude_series) * 2*cutoff_freq / frame_rate)
         filtered_amplitude_series = signal.resample(filtered_amplitude_series, nb_samples)
         new_frame_rate = 2*cutoff_freq
+    else:
+        new_frame_rate = frame_rate
 
     return filtered_amplitude_series, new_frame_rate
 
@@ -110,7 +112,20 @@ def export_to_mp3(amplitude_series: np.ndarray, frame_rate: float, sample_width:
     
     # Export the AudioSegment to an MP3 file
     audio_segment.export(output_file_path, format="mp3")
-    
+
+def add_silent_start(amplitude_series: np.ndarray, frame_rate: float, duration: float) -> np.ndarray:
+    """
+    Add a silent start to the audio signal.
+
+    :param amplitude_series: A numpy array of audio amplitude values.
+    :param frame_rate: The frame rate of the audio.
+    :param duration: The duration of the silent start in seconds.
+    :return: A numpy array of audio amplitude values with the silent start added.
+    """
+    # Calculate the number of samples to add
+    num_samples = int(frame_rate * duration)
+    silent_start = np.zeros(num_samples)
+    return np.concatenate([silent_start, amplitude_series])
 
 # Example usage
 if __name__ == "__main__":
@@ -118,7 +133,7 @@ if __name__ == "__main__":
 
     path = './audio_files/'
     input_file = 'michel.mp3'
-    cutoff_freq = 5000 # Hz
+    cutoff_freq = 500 # Hz
 
     # Convert mp3 to filtered amplitude signal
     amplitudes, frame_rate, sample_width, num_channels = mp3_to_amplitude_series(path+input_file, channels='left', start_time=15.5)

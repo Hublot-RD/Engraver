@@ -186,6 +186,7 @@ cython_debug/
 *.tiff
 *.png
 *path_parameters.txt
+*.iso
 
 # Specific folders
 audio_files/filtered/
