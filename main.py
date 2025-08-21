@@ -265,6 +265,27 @@ def check_intersection(pts: np.ndarray, frame_rate: float) -> int:
                 print(curr_pts_elev)
     return intersections
 
+def export_text_to_gcode(text: str) -> None:
+    """
+    Export the given text to a G-code file.
+
+    INITIAL_GCODE and FINAL_GCODE are included in the exported file. 
+    If the file size exceeds the maximum limit, it is split into multiple files.
+
+    Parameters
+    ----------
+    text : str
+        The text to export.
+    """
+    # Split the text into chunks if it exceeds the maximum size
+    for file_num, idx in enumerate(range(0, len(text), p.max_text_size)):
+        chunk = text[idx:idx+p.max_text_size]
+        filename = p.output_folder+p.output_filename+f"_{file_num+1}."+p.file_format
+        chunk = p.INITIAL_GCODE(str(file_num+1)) + chunk + p.FINAL_GCODE
+        with open(filename, 'w') as f:
+            f.write(chunk)
+        print(f"G-code exported to {filename}")
+
 def amplitudes_to_gcode(amplitudes: np.ndarray, frame_rate: float) -> None:
     """
     Convert a series of sound amplitudes to G-code for engraving on a cylinder.
@@ -284,7 +305,7 @@ def amplitudes_to_gcode(amplitudes: np.ndarray, frame_rate: float) -> None:
     None
     """
     # Initialisation g-code blocks 
-    text = p.INITIAL_GCODE
+    text = ""
 
     # Engraving g-code blocks
     total_length = 0
@@ -308,14 +329,9 @@ def amplitudes_to_gcode(amplitudes: np.ndarray, frame_rate: float) -> None:
             total_length += dl
 
     check_intersection(np.array(points), frame_rate)
-    
-    # Finalisation g-code blocks
-    text += p.FINAL_GCODE
 
     # Export G-code to a file
-    with open(p.output_folder+p.output_filename+"."+p.file_format, 'w') as f:
-        f.write(text)
-    print(f"G-code exported to {p.output_folder+p.output_filename}.{p.file_format}")
+    export_text_to_gcode(text)
     print(f"Total engraving length: {total_length:.3f} mm")
     print(f"Approximate machining time: {total_length / p.feed_rate:.2f} min")
 

@@ -28,8 +28,8 @@ class ParameterSet:
     filter_active = True
     cutoff_freq = 3000 # Hz
     start_time = 0 # How many seconds to crop from the start of the audio
-    duration = 4.0 # Duration of the audio signal [s]
-    silent_start_duration = 1.0 # Duration of the silent start [s]
+    duration = 12.0 # Duration of the audio signal [s]
+    silent_start_duration = 0.5 # Duration of the silent start [s]
 
     # Image
     pixel_size = 0.01 # Size of a pixel in the image [mm]
@@ -40,7 +40,7 @@ class ParameterSet:
 
     # Folders and file name
     input_folder = "./audio_files/"
-    input_filename = "squeezie.mp3"
+    input_filename = "english.mp3"
     output_folder = "./3d_files/" # "images" or "3d_files"
     output_filename = f'{round(depth*1e3)}_{round(max_amplitude*1e3)}_{round(pitch*1e3)}_{input_filename.split(".")[0]}_path'
 
@@ -51,9 +51,11 @@ class ParameterSet:
     tool_number = 19
     corrector_number = 19
     file_format = "iso"
-    INITIAL_GCODE = f"""%
-O0001 ({output_filename})
-( PART NAME : {output_filename} )
+    max_text_size = 450*1024 # [bytes] (= 450 KB)
+    def INITIAL_GCODE(self, file_ID: str = '') -> str:
+        return f"""%
+O0001 ({self.input_filename.split(".")[0]} {file_ID})
+( PART NAME : {self.output_filename} )
 ( MACH TYPE : Fraiseuse vert. 4 axes )
 ( POST TYPE : Fraisage 4axes Fanuc 0iM.GCv11 )
 ( {date.today()} )
@@ -62,13 +64,13 @@ G21
 G53Z0.
 G49
 G17G80G40G94
-M6T{tool_number}
+M6T{self.tool_number}
 G90G54
 M11
-G0X{round(end_margin + start_pos + offset_from_centerline,3)}Y0.A0.
-G43Z150.H{corrector_number}M13S{round(spindle_speed, 0)}
-G0Z{round(R+clearance,3)}
-G1Z{round(R-depth,3)}F{round(feed_rate,3)}"""
+G0X{round(self.end_margin + self.start_pos + self.offset_from_centerline,3)}Y0.A0.
+G43Z150.H{self.corrector_number}M13S{round(self.spindle_speed, 0)}
+G0Z{round(self.R+self.clearance,3)}
+G1Z{round(self.R-self.depth,3)}F{round(self.feed_rate,3)}"""
     FINAL_GCODE = f"""
 G0Z{round(R-depth+clearance,3)}
 G0Z150.
