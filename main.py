@@ -329,25 +329,20 @@ if __name__ == "__main__":
     amplitudes = add_silent_start(amplitudes, frame_rate, duration=p.silent_start_duration)
 
     # Convert amplitudes to engraving file
-    if p.ENGRAVING_OUTPUT_TYPE == 'points':
-        if p.SURFACE_TYPE == 'cylinder':
+    match (p.SURFACE_TYPE, p.ENGRAVING_OUTPUT_TYPE):
+        case ('cylinder', 'points'):
             amplitudes_to_cylinder_points(amplitudes, frame_rate)
-        elif p.SURFACE_TYPE == 'disc':
-            amplitudes_to_disc_points(amplitudes, frame_rate)
-        else:
-            raise ValueError(f"Unknown surface type: {p.SURFACE_TYPE}. Please choose 'cylinder' or 'disc'.")
-    elif p.ENGRAVING_OUTPUT_TYPE == 'image':
-        if p.SURFACE_TYPE == 'cylinder':
+        case ('cylinder', 'image'):
             amplitudes_to_cylinder_image(amplitudes, frame_rate)
-        elif p.SURFACE_TYPE == 'disc':
+        case ('disc', 'points'):
+            amplitudes_to_disc_points(amplitudes, frame_rate)
+        case ('disc', 'image'):
             amplitudes_to_disc_image(amplitudes, frame_rate)
-        else:
-            raise ValueError(f"Unknown surface type: {p.SURFACE_TYPE}. Please choose 'cylinder' or 'disc'.")
-    elif p.ENGRAVING_OUTPUT_TYPE == "gcode":
-        amplitudes_to_gcode(amplitudes, frame_rate)
-    else:
-        raise ValueError(f"Unknown engraving output type: {p.ENGRAVING_OUTPUT_TYPE}. Please choose 'points', 'image', or 'gcode'.")
-    
+        case (_, 'gcode'):
+            amplitudes_to_gcode(amplitudes, frame_rate)
+        case _:
+            raise ValueError(f"Unknown engraving output type: {p.ENGRAVING_OUTPUT_TYPE}. Please choose 'points' or 'image'.")
+
     # Export parameters to a text file
     with open(p.output_folder+p.output_filename+"_parameters.txt", 'w') as f:
         f.write(str(p))
