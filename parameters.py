@@ -17,7 +17,7 @@ class ParameterSet:
     speed_angular = 11.32 # Rotational speed the cylinder [rad/s]
     speed = speed_angular*R # Longitudinal reading speed of the tip in the engraving [mm/s]
     end_margin = 0 # Margin at the start and end of the engraving surface [mm]
-    start_pos = 0 # Position of the start of the engraving
+    start_pos = 10 # Position of the start of the engraving
     split_files = True # True if the path must be split into multiple files
     files_per_turn = 20 # Number of files per turn of the cylinder
     offset_from_centerline = 0 #-width/2 # Used to create the path of the corner of the triangle on the surface [mm]
@@ -52,7 +52,7 @@ class ParameterSet:
     corrector_number = 19
     file_format = "iso"
     max_text_size = 450*1024 # [bytes] (= 450 KB)
-    def INITIAL_GCODE(self, file_ID: str = '') -> str:
+    def INITIAL_GCODE(self, x0: str = '0.0', a0: str = '0.0', file_ID: str = '') -> str:
         return f"""%
 O0001 ({self.input_filename.split(".")[0]} {file_ID})
 ( PART NAME : {self.output_filename} )
@@ -67,7 +67,7 @@ G17G80G40G94
 M6T{self.tool_number}
 G90G54
 M11
-G0X{round(self.end_margin + self.start_pos + self.offset_from_centerline,3)}Y0.A0.
+G0X{x0}Y0.A{a0}
 G43Z150.H{self.corrector_number}M13S{round(self.spindle_speed, 0)}
 G0Z{round(self.R+self.clearance,3)}
 G1Z{round(self.R-self.depth,3)}F{round(self.feed_rate,3)}"""

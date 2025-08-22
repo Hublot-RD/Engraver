@@ -1,5 +1,6 @@
 from math import floor, pi
 import os
+import warnings
 # from OCC.Core.STEPControl import STEPControl_Writer, STEPControl_AsIs
 # from OCC.Core.IFSelect import IFSelect_RetDone
 # from OCC.Core.TopoDS import TopoDS_Shape
@@ -65,10 +66,23 @@ def export_text_to_gcode(text: str) -> None:
         The text to export.
     """
     # Split the text into chunks if it exceeds the maximum size
+    prev_newline_idx = 0
     for file_num, idx in enumerate(range(0, len(text), p.max_text_size)):
-        chunk = text[idx:idx+p.max_text_size]
+        # Cut the text at the end of a line
+        newline_idx = text.rfind('\n', idx, idx+p.max_text_size)
+        if newline_idx == -1: 
+            warnings.warn("No newline found, splitting at max size.")
+            newline_idx = idx+p.max_text_size
+        chunk = text[prev_newline_idx:newline_idx]
+        prev_newline_idx = newline_idx
+        
+        # Extract X0 and A0 from the chunk
+        x0 = chunk.split('\n')[1].split('A')[0][1:]
+        a0 = chunk.split('\n')[1].split('A')[1]
+
+        # Export chunk to G-code file
         filename = p.output_folder+p.output_filename+f"_{file_num+1}."+p.file_format
-        chunk = p.INITIAL_GCODE(str(file_num+1)) + chunk + p.FINAL_GCODE
+        chunk = p.INITIAL_GCODE(x0, a0, str(file_num+1)) + chunk + p.FINAL_GCODE
         with open(filename, 'w') as f:
             f.write(chunk)
         print(f"G-code exported to {filename}")
