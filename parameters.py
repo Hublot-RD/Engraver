@@ -16,7 +16,7 @@ class ParameterSet:
     ENGRAVING_OUTPUT_TYPE:  Literal['gcode', 'points', 'image'] = attrs.field(default='gcode')
     depth:                  float = attrs.field(default=0.025)  # Depth of the cut [mm]
     angle:                  float = attrs.field(default=90.0)  # Angle of the cut [°]
-    width:                  float = attrs.field(init=False)  # Width of the cut [mm] - calculated, not initialized
+    width:                  float = attrs.field(init=False, default=None)  # Width of the cut [mm] - calculated, not initialized
     pitch:                  float = attrs.field(default=0.5) # Pitch of the spiral [mm]
     max_amplitude:          float = attrs.field(default=0.100) # Maximal amplitude of the engraved audio signal (peak-peak) [mm]
     speed_angular:          float = attrs.field(default=11.32) # Rotational speed the cylinder [rad/s]
@@ -103,9 +103,11 @@ M30
         txt += f'\nCreated on {date.today()}'
         return txt
     
-    def export_parameters_to_txt(self, filename: str = "parameters.txt") -> None:
-        """Exports the ParameterSet object to a text file in JSON format."""
-        with open(filename, 'w') as f:
+    def export_parameters_to_txt(self) -> None:
+        """
+        Exports the ParameterSet object to a text file in JSON format.
+        """
+        with open(self.output_folder+self.output_filename+"_parameters.txt", 'w') as f:
             json.dump(attrs.asdict(self), f, indent=4)
 
     @classmethod
@@ -113,9 +115,17 @@ M30
         """
         Imports a ParameterSet object from a text file in JSON format.
         """
+        print(f"Importing parameters from {filename}")
+        
         try:
             with open(filename, 'r') as f:
                 data = json.load(f)
+
+                # Remove keys that are calculated
+                non_init_fields = [field.name for field in attrs.fields(cls) if field.init is False]
+                for field_name in non_init_fields:
+                    data.pop(field_name, None)
+
                 return cls(**data)
         except FileNotFoundError:
             print(f"Error: File '{filename}' not found. Returning default ParameterSet.")
@@ -128,6 +138,7 @@ M30
             return cls()  # Return a default ParameterSet
     
 default_parameters = ParameterSet()
+# default_parameters = ParameterSet.from_txt("./3d_files/25_100_500_squeezie_path_parameters.txt")
 
 if __name__ == '__main__':
-    print(default_parameters)
+    default_parameters.export_parameters_to_txt()
