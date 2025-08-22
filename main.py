@@ -28,5 +28,4 @@ if __name__ == "__main__":
             raise ValueError(f"Unknown engraving output type: {p.ENGRAVING_OUTPUT_TYPE}. Please choose 'points' or 'image'.")
 
     # Export parameters to a text file
-    with open(p.output_folder+p.output_filename+"_parameters.txt", 'w') as f:
-        f.write(str(p))
+    p.export_parameters_to_txt()
