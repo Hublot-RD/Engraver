@@ -47,7 +47,7 @@ class ParameterSet:
     input_folder:           str = attrs.field(default="./audio_files/")
     input_filename:         str = attrs.field(default="english.mp3")
     output_folder:          str = attrs.field(default="./3d_files/") # "images" or "3d_files"
-    output_filename:        str = attrs.field(default=f'{0}_{0}_{0}_path')
+    output_filename:        str = attrs.field(init=False)
 
     # G-code
     feed_rate:              float = attrs.field(default=50.0) # [mm/min]
