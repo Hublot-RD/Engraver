@@ -86,7 +86,7 @@ G1Z{round(self.R-self.depth,3)}F{round(self.feed_rate,3)}"""
         self.engraving_pixel_width = round(self.width / self.pixel_size)
         self.output_filename = f'{round(self.depth*1e3)}_{round(self.max_amplitude*1e3)}_{round(self.pitch*1e3)}_{self.input_filename.split(".")[0]}_path'
         self.FINAL_GCODE = f"""
-G0Z{round(self.R-self.depth,3)}
+G0Z{round(self.R-self.depth+self.clearance,3)}
 G0Z150.
 G49G53Z0.
 M15
