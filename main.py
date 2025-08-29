@@ -6,7 +6,7 @@ from parameters import default_parameters as p
 # Usage
 if __name__ == "__main__":
     # Extract amplitudes from audio
-    amplitudes, frame_rate, *_ = ap.mp3_to_amplitude_series(p.input_folder+p.input_filename, channels='left', start_time=p.start_time, duration=p.duration)
+    amplitudes, frame_rate, *_ = ap.mp3_to_amplitude_series(p.input_folder+p.input_filename, channels='left', start_time=p.start_time, duration=p.duration, target_volume=p.target_volume)
     if p.filter_active:
         amplitudes, frame_rate = ap.apply_low_pass_filter(amplitudes, frame_rate, cutoff_freq=p.cutoff_freq, downsample=True)
 
