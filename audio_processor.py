@@ -4,7 +4,7 @@ import scipy.signal as signal
 import matplotlib.pyplot as plt
 import warnings
 
-def mp3_to_amplitude_series(mp3_file_path: str, channels: str='left', start_time: float = 0.0, duration: float = 1e9, target_volume: float = -10.0) -> tuple[np.ndarray, float, float, int]:
+def mp3_to_amplitude_series(mp3_file_path: str, channels: str='left', start_time: float = 0.0, duration: float = 1e9, target_volume: float = -18.0) -> tuple[np.ndarray, float, float, int]:
     """
     Load an MP3 file and convert it to a numpy array of amplitude values.
     
@@ -12,6 +12,7 @@ def mp3_to_amplitude_series(mp3_file_path: str, channels: str='left', start_time
     :param channels: The channel to extract from the audio file. Default is 'left'. ['left', 'right', 'both']
     :param start_time: How many seconds to crop from the start of the audio. Default is 0
     :param duration: Duration of the audio signal, in seconds. Default is 1e9
+    :param target_volume: Target volume for the audio signal, in dBFS. Default is -18.0
     :return: A numpy array of amplitude values, the frame rate, sample width, and number of channels.
     """
     # Load the MP3 file
