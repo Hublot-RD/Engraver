@@ -13,7 +13,7 @@ class ParameterSet:
     L:                      float = attrs.field(default=125.0)  # Length of the cylinder [mm]
 
     # Engraving
-    ENGRAVING_OUTPUT_TYPE:  Literal['gcode', 'points', 'image'] = attrs.field(default='gcode')
+    ENGRAVING_OUTPUT_TYPE:  Literal['gcode', 'points', 'image'] = attrs.field(default='points')
     depth:                  float = attrs.field(default=0.025)  # Depth of the cut [mm]
     angle:                  float = attrs.field(default=90.0)  # Angle of the cut [°]
     width:                  float = attrs.field(init=False, default=None)  # Width of the cut [mm] - calculated, not initialized
@@ -33,7 +33,7 @@ class ParameterSet:
     filter_active:          bool = attrs.field(default=True)
     cutoff_freq:            int = attrs.field(default=3000) # Hz
     start_time:             float = attrs.field(default=0) # How many seconds to crop from the start of the audio
-    duration:               float = attrs.field(default=12.0) # Duration of the audio signal [s]
+    duration:               float = attrs.field(default=3.0) # Duration of the audio signal [s]
     silent_start_duration:  float = attrs.field(default=0.5) # Duration of the silent start [s]
 
     # Image

@@ -33,6 +33,7 @@ def amplitudes_to_cylinder_points(amplitudes: np.ndarray, frame_rate: float) -> 
         radius = p.R-p.depth
         phase = (i) * p.speed_angular/frame_rate
         elevation = phase*p.pitch/(2*pi) + amp*p.max_amplitude/2 + p.end_margin + p.start_pos + p.offset_from_centerline
+        if p.right_thread: phase = -phase
 
         x = p.R
         y = radius * phase
