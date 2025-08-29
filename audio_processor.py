@@ -147,7 +147,6 @@ def plot_amplitude_series(amplitude_series: np.ndarray, frame_rate: float) -> No
 
     :param amplitude_series: A numpy array of audio amplitude values.
     :param frame_rate: The frame rate of the audio.
-    :param max_amplitude: The maximum amplitude value for normalization.
     """
     time = np.arange(len(amplitude_series)) / frame_rate
     plt.figure(figsize=(12, 6))
