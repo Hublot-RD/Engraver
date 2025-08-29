@@ -35,6 +35,7 @@ class ParameterSet:
     start_time:             float = attrs.field(default=0) # How many seconds to crop from the start of the audio
     duration:               float = attrs.field(default=3.0) # Duration of the audio signal [s]
     silent_start_duration:  float = attrs.field(default=0.5) # Duration of the silent start [s]
+    target_volume:          float = attrs.field(default=-18.0) # Target amplitude for the sound [dBFS]. In Europe, the EBU recommend that −18 dBFS equates to the alignment level.
 
     # Image
     pixel_size:             float = attrs.field(default=0.01) # Size of a pixel in the image [mm]

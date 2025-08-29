@@ -1,9 +1,10 @@
 from pydub import AudioSegment
 import numpy as np
 import scipy.signal as signal
+import matplotlib.pyplot as plt
 import warnings
 
-def mp3_to_amplitude_series(mp3_file_path: str, channels: str='left', start_time: float = 0.0, duration: float = 1e9) -> tuple[np.ndarray, float, float, int]:
+def mp3_to_amplitude_series(mp3_file_path: str, channels: str='left', start_time: float = 0.0, duration: float = 1e9, target_volume: float = -18.0) -> tuple[np.ndarray, float, float, int]:
     """
     Load an MP3 file and convert it to a numpy array of amplitude values.
     
@@ -11,10 +12,12 @@ def mp3_to_amplitude_series(mp3_file_path: str, channels: str='left', start_time
     :param channels: The channel to extract from the audio file. Default is 'left'. ['left', 'right', 'both']
     :param start_time: How many seconds to crop from the start of the audio. Default is 0
     :param duration: Duration of the audio signal, in seconds. Default is 1e9
+    :param target_volume: Target volume for the audio signal, in dBFS. Default is -18.0
     :return: A numpy array of amplitude values, the frame rate, sample width, and number of channels.
     """
     # Load the MP3 file
     audio = AudioSegment.from_mp3(mp3_file_path)
+    audio = match_target_amplitude(audio, target_volume)
     
     # Convert the audio to raw data
     raw_data = audio.raw_data
@@ -96,7 +99,7 @@ def export_to_mp3(amplitude_series: np.ndarray, frame_rate: float, sample_width:
     :param output_file_path: The path to save the output MP3 file.
     """
     # Denormalize the voltage series to integer values (assuming 16-bit audio)
-    audio_data = (amplitude_series * (2**(8 * sample_width - 1))).astype(np.int16)
+    audio_data = np.array(amplitude_series * (2**(8 * sample_width - 1))).astype(np.int16)
     
     # If the audio has more than one channel, reshape the array
     if num_channels > 1:
@@ -127,34 +130,51 @@ def add_silent_start(amplitude_series: np.ndarray, frame_rate: float, duration: 
     silent_start = np.zeros(num_samples)
     return np.concatenate([silent_start, amplitude_series])
 
+def match_target_amplitude(audio: AudioSegment, target_dBFS: float) -> AudioSegment:
+    '''
+    Match the target amplitude of the audio segment to the specified dBFS level.
+
+    :param audio: The audio segment to modify.
+    :param target_dBFS: The target dBFS level to achieve.
+    :return: The modified audio segment.
+    '''
+    change_in_dBFS = target_dBFS - audio.dBFS
+    return audio.apply_gain(change_in_dBFS)
+
+def plot_amplitude_series(amplitude_series: np.ndarray, frame_rate: float) -> None:
+    """
+    Plot the amplitude series over time.
+
+    :param amplitude_series: A numpy array of audio amplitude values.
+    :param frame_rate: The frame rate of the audio.
+    """
+    time = np.arange(len(amplitude_series)) / frame_rate
+    plt.figure(figsize=(12, 6))
+    plt.plot(time, amplitude_series, color='r', label='Audio signal')
+    plt.ylim(-1.1, 1.1)
+    plt.hlines([-1, 1], 0, time[-1], colors='black', linestyles='dashed', label='Max amplitude')
+    plt.xlabel('Time [s]')
+    plt.ylabel('Amplitude [ ]')
+    plt.title('Audio Amplitude vs Time')
+    plt.legend()
+    plt.grid()
+    plt.show()
+
+
 # Example usage
 if __name__ == "__main__":
-    import matplotlib.pyplot as plt
-
     path = './audio_files/'
-    input_file = 'michel.mp3'
-    cutoff_freq = 500 # Hz
+    input_file = 'scale_cdef.mp3'
+    cutoff_freq = 3000 # Hz
 
     # Convert mp3 to filtered amplitude signal
-    amplitudes, frame_rate, sample_width, num_channels = mp3_to_amplitude_series(path+input_file, channels='left', start_time=15.5)
-    amplitudes_filtered = apply_low_pass_filter(amplitudes, frame_rate, cutoff_freq=cutoff_freq)
+    amplitudes, frame_rate, sample_width, num_channels = mp3_to_amplitude_series(path+input_file, channels='left', start_time=0, target_volume=-18.0)
+    amplitudes_filtered, frame_rate = apply_low_pass_filter(amplitudes, frame_rate, cutoff_freq=cutoff_freq)
 
+    # Plot the amplitude series
+    plot_amplitude_series(amplitudes, frame_rate)
+    
     # Export the filtered signal to an MP3 file
     output_file = path + 'filtered/' + input_file.split('.')[0] + f'_filtered_{int(cutoff_freq)}Hz.mp3'
     export_to_mp3(amplitudes_filtered, frame_rate, sample_width, num_channels, output_file)
-
-    # # Plot the amplitude against time
-    # time = np.arange(len(voltage_series)) / frame_rate
-    # plot_window = int(10 * frame_rate) # Plot only the first X second
-
-    # plt.figure(figsize=(12, 6))
-    # plt.plot(time[10*frame_rate:10*frame_rate+plot_window], voltage_series[10*frame_rate:10*frame_rate+plot_window,0], label='Raw')
-    # plt.plot(time[10*frame_rate:10*frame_rate+plot_window], voltage_series_7k[10*frame_rate:10*frame_rate+plot_window], label='Filtered 7 kHz')
-    # plt.plot(time[10*frame_rate:10*frame_rate+plot_window], voltage_series_3k[10*frame_rate:10*frame_rate+plot_window], label='Filtered 3 kHz')
-    # plt.xlabel('Time (seconds)')
-    # plt.ylabel('Amplitude')
-    # plt.title('Audio Amplitude vs Time')
-    # plt.legend()
-    # plt.grid()
-    # plt.show()
 
