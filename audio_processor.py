@@ -98,8 +98,7 @@ def export_to_mp3(amplitude_series: np.ndarray, frame_rate: float, sample_width:
     :param output_file_path: The path to save the output MP3 file.
     """
     # Denormalize the voltage series to integer values (assuming 16-bit audio)
-    audio_data = np.array(amplitude_series * (2**(8 * sample_width - 1)))
-    audio_data = audio_data.astype(np.int16)
+    audio_data = np.array(amplitude_series * (2**(8 * sample_width - 1))).astype(np.int16)
     
     # If the audio has more than one channel, reshape the array
     if num_channels > 1:
@@ -165,17 +164,17 @@ def plot_amplitude_series(amplitude_series: np.ndarray, frame_rate: float) -> No
 # Example usage
 if __name__ == "__main__":
     path = './audio_files/'
-    input_file = 'english.mp3'
+    input_file = 'scale_cdef.mp3'
     cutoff_freq = 3000 # Hz
 
     # Convert mp3 to filtered amplitude signal
-    amplitudes, frame_rate, sample_width, num_channels = mp3_to_amplitude_series(path+input_file, channels='left', start_time=0, duration=5, target_volume=-18.0)
-    amplitudes_filtered = apply_low_pass_filter(amplitudes, frame_rate, cutoff_freq=cutoff_freq)
+    amplitudes, frame_rate, sample_width, num_channels = mp3_to_amplitude_series(path+input_file, channels='left', start_time=0, target_volume=-18.0)
+    amplitudes_filtered, frame_rate = apply_low_pass_filter(amplitudes, frame_rate, cutoff_freq=cutoff_freq)
 
     # Plot the amplitude series
     plot_amplitude_series(amplitudes, frame_rate)
     
     # Export the filtered signal to an MP3 file
-    # output_file = path + 'filtered/' + input_file.split('.')[0] + f'_filtered_{int(cutoff_freq)}Hz.mp3'
-    # export_to_mp3(amplitudes_filtered, frame_rate, sample_width, num_channels, output_file)
+    output_file = path + 'filtered/' + input_file.split('.')[0] + f'_filtered_{int(cutoff_freq)}Hz.mp3'
+    export_to_mp3(amplitudes_filtered, frame_rate, sample_width, num_channels, output_file)
 
