@@ -249,10 +249,12 @@ def amplitudes_to_gcode(amplitudes: np.ndarray, frame_rate: float) -> None:
     """
     # Initialisation g-code blocks 
     text = ""
+    gcode_one_pass = ""
 
-    # Engraving g-code blocks
-    total_length = 0
+    # Create g-code blocks for one pass of engraving
+    length_one_pass = 0
     points = []
+    x0, a0 = 0, 0
     for i,amp in enumerate(amplitudes):
         # Compute point
         phase = (i) * p.speed/p.R / frame_rate
@@ -268,15 +270,34 @@ def amplitudes_to_gcode(amplitudes: np.ndarray, frame_rate: float) -> None:
             break
         else:
             line = f"\nX{round(elevation, 3)}A{round(np.rad2deg(phase), 3)}"
-            text += line
-            total_length += dl
+            gcode_one_pass += line
+            length_one_pass += dl
+            if i == 0:
+                x0 = round(elevation, 3)
+                a0 = round(np.rad2deg(phase), 3)
 
     check_intersection(np.array(points), frame_rate)
 
+    # Repeat for each pass
+    cutted_depth = 0.0
+    passes_depth = []
+    total_length = 0.0
+    while cutted_depth < p.depth:
+        pass_depth = min(p.depth - cutted_depth, p.depth_of_cut)
+        passes_depth.append(pass_depth)
+
+        # Add one pass to gcode
+        cutted_depth += pass_depth
+        if len(passes_depth) > 1: 
+            text += p.depth_change_sequence(cutted_depth, x0, a0)
+        text += gcode_one_pass
+        total_length += length_one_pass
+
     # Export G-code to a file
-    exporter.export_text_to_gcode(text)
+    exporter.export_text_to_gcode(text, x0, a0)
+    print(f"Number of passes: {len(passes_depth)} ({[round(d*1e3, 0) for d in passes_depth]} [um])")
     print(f"Total engraving length: {total_length:.3f} mm")
-    print(f"Approximate machining time: {total_length / p.feed_rate:.2f} min")
+    print(f"Machining time: ~{total_length / p.feed_rate // 60:.0f}h{total_length / p.feed_rate % 60:.0f}min")
 
 def check_intersection(pts: np.ndarray, frame_rate: float) -> int:
     """

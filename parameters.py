@@ -1,4 +1,4 @@
-from math import tan, radians
+from math import tan, radians, sqrt
 from datetime import date
 import attrs
 from typing import Literal
@@ -13,8 +13,8 @@ class ParameterSet:
     L:                      float = attrs.field(default=125.0)  # Length of the cylinder [mm]
 
     # Engraving
-    ENGRAVING_OUTPUT_TYPE:  Literal['gcode', 'points', 'image'] = attrs.field(default='points')
-    depth:                  float = attrs.field(default=0.025)  # Depth of the cut [mm]
+    ENGRAVING_OUTPUT_TYPE:  Literal['gcode', 'points', 'image'] = attrs.field(default='gcode')
+    depth:                  float = attrs.field(default=0.050)  # Depth of the cut [mm]
     angle:                  float = attrs.field(default=90.0)  # Angle of the cut [°]
     width:                  float = attrs.field(init=False, default=None)  # Width of the cut [mm] - calculated, not initialized
     pitch:                  float = attrs.field(default=0.5) # Pitch of the spiral [mm]
@@ -32,8 +32,8 @@ class ParameterSet:
     # Audio
     filter_active:          bool = attrs.field(default=True)
     cutoff_freq:            int = attrs.field(default=3000) # Hz
-    start_time:             float = attrs.field(default=0) # How many seconds to crop from the start of the audio
-    duration:               float = attrs.field(default=3.0) # Duration of the audio signal [s]
+    start_time:             float = attrs.field(default=0.0) # How many seconds to crop from the start of the audio
+    duration:               float = attrs.field(default=20.0) # Duration of the audio signal [s]
     silent_start_duration:  float = attrs.field(default=0.5) # Duration of the silent start [s]
     target_volume:          float = attrs.field(default=-18.0) # Target amplitude for the sound [dBFS]. In Europe, the EBU recommend that −18 dBFS equates to the alignment level.
 
@@ -46,21 +46,24 @@ class ParameterSet:
 
     # Folders and file name
     input_folder:           str = attrs.field(default="./audio_files/")
-    input_filename:         str = attrs.field(default="english.mp3")
+    input_filename:         str = attrs.field(default="french.mp3")
     output_folder:          str = attrs.field(default="./3d_files/") # "images" or "3d_files"
     output_filename:        str = attrs.field(init=False)
 
     # G-code
     feed_rate:              float = attrs.field(default=50.0) # [mm/min]
-    spindle_speed:          int = attrs.field(default=6366) # [rpm]
+    spindle_speed:          int = attrs.field(default=15000) # [rpm]
     clearance:              float = attrs.field(default=5.0) # [mm]
+    depth_of_cut:           float = attrs.field(default=0.025) # [mm] Depth of cut for one pass
     tool_number:            int = attrs.field(default=19)
     corrector_number:       int = attrs.field(default=19)
     file_format:            str = attrs.field(default="iso")
-    max_text_size:          int = attrs.field(default=450*1024) # [bytes] (= 450 KB)
+    max_text_size:          int = attrs.field(default=900*1024*1024) # [bytes] (= 900 MB)
     FINAL_GCODE:            str = attrs.field(init=False)
 
     def INITIAL_GCODE(self, x0: str = '0.0', a0: str = '0.0', file_ID: str = '') -> str:
+        # Start outside of the cylinder and penetrate from the side
+        y0 = round(2*sqrt(2*self.R*self.depth_of_cut - self.depth_of_cut**2), 3) 
         return f"""%
 O0001 ({self.input_filename.split(".")[0]} {file_ID})
 ( PART NAME : {self.output_filename} )
@@ -75,11 +78,27 @@ G17G80G40G94
 M6T{self.tool_number}
 G90G54
 M11
-G0X{x0}Y0.A{a0}
+G0X{x0}Y{y0}A{a0}
 G43Z150.H{self.corrector_number}M13S{round(self.spindle_speed, 0)}
+G0Z{round(self.R-self.depth_of_cut,3)}
+G1Y0.F{round(self.feed_rate,3)}"""
+
+    def depth_change_sequence(self, desired_depth: float, x0: float, a0: float) -> str:
+        '''
+        Generate the G-code for changing the depth of the engraving.
+
+        go up, to initial pos, then enter 
+
+        :param desired_depth: The depth of the engraving for the next pass.
+        :return: The G-code for changing the depth.
+        '''
+        y0 = round(2*sqrt(2*self.R*desired_depth - desired_depth**2), 3)
+        return f"""
 G0Z{round(self.R+self.clearance,3)}
-G1Z{round(self.R-self.depth,3)}F{round(self.feed_rate,3)}"""
-   
+G0X{x0}Y{y0}A{a0}
+G0Z{round(self.R-desired_depth,3)}
+G1Y0.F{round(self.feed_rate,3)}"""
+
     def __attrs_post_init__(self):
         # Calculate derived attributes
         self.width = 2 * self.depth * tan(radians(self.angle/2))

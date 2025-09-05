@@ -53,7 +53,7 @@ def export_path_to_csv(path: list[tuple[float, float, float]], filename: str, sp
                 file.write(f"{x/1000}, {y/1000}, {z/1000}\n")
         # print(f"CSV file '{filename}' created successfully.")
 
-def export_text_to_gcode(text: str) -> None:
+def export_text_to_gcode(text: str, x0: float, a0: float) -> None:
     """
     Export the given text to a G-code file.
 
@@ -75,14 +75,10 @@ def export_text_to_gcode(text: str) -> None:
             newline_idx = idx+p.max_text_size
         chunk = text[prev_newline_idx:newline_idx]
         prev_newline_idx = newline_idx
-        
-        # Extract X0 and A0 from the chunk
-        x0 = chunk.split('\n')[1].split('A')[0][1:]
-        a0 = chunk.split('\n')[1].split('A')[1]
 
         # Export chunk to G-code file
         filename = p.output_folder+p.output_filename+f"_{file_num+1}."+p.file_format
-        chunk = p.INITIAL_GCODE(x0, a0, str(file_num+1)) + chunk + p.FINAL_GCODE
+        chunk = p.INITIAL_GCODE(str(x0), str(a0), str(file_num+1)) + chunk + p.FINAL_GCODE
         with open(filename, 'w') as f:
             f.write(chunk)
         print(f"G-code exported to {filename}")
