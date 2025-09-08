@@ -14,7 +14,7 @@ class ParameterSet:
 
     # Engraving
     ENGRAVING_OUTPUT_TYPE:  Literal['gcode', 'points', 'image'] = attrs.field(default='gcode')
-    depth:                  float = attrs.field(default=0.050)  # Depth of the cut [mm]
+    depth:                  float = attrs.field(default=0.026)  # Depth of the cut [mm]
     angle:                  float = attrs.field(default=90.0)  # Angle of the cut [°]
     width:                  float = attrs.field(init=False, default=None)  # Width of the cut [mm] - calculated, not initialized
     pitch:                  float = attrs.field(default=0.5) # Pitch of the spiral [mm]
@@ -22,7 +22,7 @@ class ParameterSet:
     speed_angular:          float = attrs.field(default=11.32) # Rotational speed the cylinder [rad/s]
     speed:                  float = attrs.field(init=False) # Longitudinal reading speed of the tip in the engraving [mm/s] - calculated
     end_margin:             float = attrs.field(default=0) # Margin at the start and end of the engraving surface [mm]
-    start_pos:              float = attrs.field(default=0) # Position of the start of the engraving
+    start_pos:              float = attrs.field(default=10) # Position of the start of the engraving
     split_files:            bool = attrs.field(default=True) # True if the path must be split into multiple files
     files_per_turn:         int = attrs.field(default=20) # Number of files per turn of the cylinder
     offset_from_centerline: float = attrs.field(default=0.0) #-width/2 # Used to create the path of the corner of the triangle on the surface [mm]
@@ -33,7 +33,7 @@ class ParameterSet:
     filter_active:          bool = attrs.field(default=True)
     cutoff_freq:            int = attrs.field(default=3000) # Hz
     start_time:             float = attrs.field(default=0.0) # How many seconds to crop from the start of the audio
-    duration:               float = attrs.field(default=20.0) # Duration of the audio signal [s]
+    duration:               float = attrs.field(default=1.5) # Duration of the audio signal [s]
     silent_start_duration:  float = attrs.field(default=0.5) # Duration of the silent start [s]
     target_volume:          float = attrs.field(default=-18.0) # Target amplitude for the sound [dBFS]. In Europe, the EBU recommend that −18 dBFS equates to the alignment level.
 
@@ -54,9 +54,9 @@ class ParameterSet:
     feed_rate:              float = attrs.field(default=50.0) # [mm/min]
     spindle_speed:          int = attrs.field(default=15000) # [rpm]
     clearance:              float = attrs.field(default=5.0) # [mm]
-    depth_of_cut:           float = attrs.field(default=0.025) # [mm] Depth of cut for one pass
-    tool_number:            int = attrs.field(default=19)
-    corrector_number:       int = attrs.field(default=19)
+    depth_of_cut:           float = attrs.field(default=0.005) # [mm] Depth of cut for one pass
+    tool_number:            int = attrs.field(default=16)
+    corrector_number:       int = attrs.field(default=16)
     file_format:            str = attrs.field(default="iso")
     max_text_size:          int = attrs.field(default=900*1024*1024) # [bytes] (= 900 MB)
     FINAL_GCODE:            str = attrs.field(init=False)
@@ -87,7 +87,7 @@ G1Y0.F{round(self.feed_rate,3)}"""
         '''
         Generate the G-code for changing the depth of the engraving.
 
-        go up, to initial pos, then enter 
+        Goes up, to initial position, then enter the cylinder from y0 to 0. 
 
         :param desired_depth: The depth of the engraving for the next pass.
         :return: The G-code for changing the depth.
@@ -96,6 +96,7 @@ G1Y0.F{round(self.feed_rate,3)}"""
         return f"""
 G0Z{round(self.R+self.clearance,3)}
 G0X{x0}Y{y0}A{a0}
+M01
 G0Z{round(self.R-desired_depth,3)}
 G1Y0.F{round(self.feed_rate,3)}"""
 
