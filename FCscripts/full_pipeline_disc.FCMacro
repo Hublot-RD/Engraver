@@ -12,7 +12,7 @@ doc = None
 TRI_HEIGHT = 0.2  # Height of the triangle [mm]
 TRI_ANGLE = math.pi / 2  # Angle of the tip [rad]
 CYL_RADIUS = 26.5  # Radius of the cylinder [mm]
-CYL_LENGTH = 5  # Length of the cylinder [mm]
+CYL_LENGTH = 125  # Length of the cylinder [mm]
 PATH_FILLET_RADIUS = 0.5 # Radius of the fillet to smooth tip path
 TIP_FILLET_RADIUS = 0.010 # Radius of the bottom of the engraving
 

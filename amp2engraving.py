@@ -279,7 +279,7 @@ def amplitudes_to_gcode(amplitudes: np.ndarray, frame_rate: float) -> None:
     check_intersection(np.array(points), frame_rate)
 
     # Repeat for each pass
-    cutted_depth = 0.0
+    cutted_depth = p.start_depth
     passes_depth = []
     total_length = 0.0
     while cutted_depth < p.depth:

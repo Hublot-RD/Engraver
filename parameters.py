@@ -14,7 +14,7 @@ class ParameterSet:
 
     # Engraving
     ENGRAVING_OUTPUT_TYPE:  Literal['gcode', 'points', 'image'] = attrs.field(default='gcode')
-    depth:                  float = attrs.field(default=0.026)  # Depth of the cut [mm]
+    depth:                  float = attrs.field(default=0.074)  # Depth of the cut [mm]
     angle:                  float = attrs.field(default=90.0)  # Angle of the cut [°]
     width:                  float = attrs.field(init=False, default=None)  # Width of the cut [mm] - calculated, not initialized
     pitch:                  float = attrs.field(default=0.5) # Pitch of the spiral [mm]
@@ -23,7 +23,7 @@ class ParameterSet:
     speed:                  float = attrs.field(init=False) # Longitudinal reading speed of the tip in the engraving [mm/s] - calculated
     end_margin:             float = attrs.field(default=0) # Margin at the start and end of the engraving surface [mm]
     start_pos:              float = attrs.field(default=10) # Position of the start of the engraving
-    split_files:            bool = attrs.field(default=True) # True if the path must be split into multiple files
+    split_files:            bool = attrs.field(default=False) # True if the path must be split into multiple files
     files_per_turn:         int = attrs.field(default=20) # Number of files per turn of the cylinder
     offset_from_centerline: float = attrs.field(default=0.0) #-width/2 # Used to create the path of the corner of the triangle on the surface [mm]
     intersection_margin:    float = attrs.field(default=0.010) # Margin
@@ -51,10 +51,11 @@ class ParameterSet:
     output_filename:        str = attrs.field(init=False)
 
     # G-code
-    feed_rate:              float = attrs.field(default=50.0) # [mm/min]
+    feed_rate:              float = attrs.field(default=100.0) # [mm/min]
     spindle_speed:          int = attrs.field(default=15000) # [rpm]
     clearance:              float = attrs.field(default=5.0) # [mm]
     depth_of_cut:           float = attrs.field(default=0.005) # [mm] Depth of cut for one pass
+    start_depth:            float = attrs.field(default=0.050) # [mm] Initial depth of the engraving
     tool_number:            int = attrs.field(default=16)
     corrector_number:       int = attrs.field(default=16)
     file_format:            str = attrs.field(default="iso")
@@ -63,7 +64,8 @@ class ParameterSet:
 
     def INITIAL_GCODE(self, x0: str = '0.0', a0: str = '0.0', file_ID: str = '') -> str:
         # Start outside of the cylinder and penetrate from the side
-        y0 = round(2*sqrt(2*self.R*self.depth_of_cut - self.depth_of_cut**2), 3) 
+        depth_first_pass = self.depth_of_cut + self.start_depth
+        y0 = round(2*sqrt(2*self.R*depth_first_pass - depth_first_pass**2), 3) 
         return f"""%
 O0001 ({self.input_filename.split(".")[0]} {file_ID})
 ( PART NAME : {self.output_filename} )
@@ -80,7 +82,7 @@ G90G54
 M11
 G0X{x0}Y{y0}A{a0}
 G43Z150.H{self.corrector_number}M13S{round(self.spindle_speed, 0)}
-G0Z{round(self.R-self.depth_of_cut,3)}
+G0Z{round(self.R-self.start_depth-self.depth_of_cut,3)}
 G1Y0.F{round(self.feed_rate,3)}"""
 
     def depth_change_sequence(self, desired_depth: float, x0: float, a0: float) -> str:
@@ -94,6 +96,7 @@ G1Y0.F{round(self.feed_rate,3)}"""
         '''
         y0 = round(2*sqrt(2*self.R*desired_depth - desired_depth**2), 3)
         return f"""
+( Depth change to {round(1e3*desired_depth,0)} um )
 G0Z{round(self.R+self.clearance,3)}
 G0X{x0}Y{y0}A{a0}
 M01
