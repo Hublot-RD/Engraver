@@ -14,15 +14,15 @@ class ParameterSet:
 
     # Engraving
     ENGRAVING_OUTPUT_TYPE:  Literal['gcode', 'points', 'image'] = attrs.field(default='gcode')
-    depth:                  float = attrs.field(default=0.074)  # Depth of the cut [mm]
+    depth:                  float = attrs.field(default=0.050)  # Depth of the cut [mm]
     angle:                  float = attrs.field(default=90.0)  # Angle of the cut [°]
     width:                  float = attrs.field(init=False, default=None)  # Width of the cut [mm] - calculated, not initialized
-    pitch:                  float = attrs.field(default=0.5) # Pitch of the spiral [mm]
+    pitch:                  float = attrs.field(default=0.25) # Pitch of the spiral [mm]
     max_amplitude:          float = attrs.field(default=0.100) # Maximal amplitude of the engraved audio signal (peak-peak) [mm]
     speed_angular:          float = attrs.field(default=11.32) # Rotational speed the cylinder [rad/s]
     speed:                  float = attrs.field(init=False) # Longitudinal reading speed of the tip in the engraving [mm/s] - calculated
     end_margin:             float = attrs.field(default=0) # Margin at the start and end of the engraving surface [mm]
-    start_pos:              float = attrs.field(default=10) # Position of the start of the engraving
+    start_pos:              float = attrs.field(default=15) # Position of the start of the engraving
     split_files:            bool = attrs.field(default=False) # True if the path must be split into multiple files
     files_per_turn:         int = attrs.field(default=20) # Number of files per turn of the cylinder
     offset_from_centerline: float = attrs.field(default=0.0) #-width/2 # Used to create the path of the corner of the triangle on the surface [mm]
@@ -51,11 +51,11 @@ class ParameterSet:
     output_filename:        str = attrs.field(init=False)
 
     # G-code
-    feed_rate:              float = attrs.field(default=100.0) # [mm/min]
+    feed_rate:              float = attrs.field(default=250.0) # [mm/min]
     spindle_speed:          int = attrs.field(default=15000) # [rpm]
     clearance:              float = attrs.field(default=5.0) # [mm]
     depth_of_cut:           float = attrs.field(default=0.005) # [mm] Depth of cut for one pass
-    start_depth:            float = attrs.field(default=0.050) # [mm] Initial depth of the engraving
+    start_depth:            float = attrs.field(default=0.025) # [mm] Initial depth of the engraving
     tool_number:            int = attrs.field(default=16)
     corrector_number:       int = attrs.field(default=16)
     file_format:            str = attrs.field(default="iso")

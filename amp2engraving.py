@@ -284,6 +284,8 @@ def amplitudes_to_gcode(amplitudes: np.ndarray, frame_rate: float) -> None:
     total_length = 0.0
     while cutted_depth < p.depth:
         pass_depth = min(p.depth - cutted_depth, p.depth_of_cut)
+        if pass_depth <= 0.01*p.depth_of_cut:
+            break
         passes_depth.append(pass_depth)
 
         # Add one pass to gcode
