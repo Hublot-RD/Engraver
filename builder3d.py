@@ -1,6 +1,4 @@
 import cadquery as cq
-from math import pi, cos
-import exporter
 
 
 def create_tip_path_wire(tip_path: list[tuple[float, float, float]], filename: str = "my_tip_path.stp", output_format: str = "STEP") -> None:
@@ -33,6 +31,7 @@ def create_tip_path_wire(tip_path: list[tuple[float, float, float]], filename: s
 # Example usage
 if __name__ == "__main__":
     from numpy import linspace
+    from math import pi, cos
     
     # Define the cylinder parameters
     R = 26.5  # Radius

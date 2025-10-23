@@ -307,7 +307,7 @@ def amplitudes_to_wire(amplitudes: np.ndarray, frame_rate: float) -> None:
     Convert a series of sound amplitudes to a 3D wire for engraving on a cylinder.
 
     The wire is generated based on the parameters defined in the `parameters.py` file.
-    The wire is then exported to a file.
+    The wire is then exported to two files: a STEP file for the 3D spiral and a DXF file for the unravelled 2D projection.
 
     Parameters
     ----------
