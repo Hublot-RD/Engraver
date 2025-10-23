@@ -5,7 +5,7 @@ Scripts to generate engraving files from audio.
 ## Installation
 
 1. Install conda (for example, from [Miniforge](https://docs.conda.io/projects/conda/en/stable/)).
-1. Follow instructions [here](https://github.com/tpaviot/pythonocc-core?tab=readme-ov-file) to install the library. (Only required for legacy version)
+1. Follow instructions [here](https://cadquery.readthedocs.io/en/latest/installation.html) to install the library. (Only required to export path to STEP and DXF)
 1. Install all other packages listed in *requirements.txt*
 
 ## Usage
@@ -32,6 +32,10 @@ The software is organized into multiple files to improve readability. They are:
 ## Current version: G-code creator
 
 The current state of the project can generate G-codes for the TRIDENT TR 60A. The python script reads an audio file and extracts an amplitude time series. It is then converted into a helical path that the engraving tip must follow. This path is exported as a G-code file (or multiple to respect the size limit) that is ready to use on the machine.
+
+## Current version: Wire creator
+
+The project can also generate a STEP and a DXF file representing the engraving path. There is no volume information, making generation fast and files "light". We are working with suppliers to see if this option is ok for them.
 
 
 # Legacy documentation
