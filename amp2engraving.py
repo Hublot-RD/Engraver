@@ -6,6 +6,7 @@ import warnings
 import exporter
 from parameters import default_parameters as p
 from geometry import cyl2cart
+import builder3d
 
 
 def amplitudes_to_cylinder_points(amplitudes: np.ndarray, frame_rate: float) -> None:
@@ -35,8 +36,8 @@ def amplitudes_to_cylinder_points(amplitudes: np.ndarray, frame_rate: float) -> 
         elevation = phase*p.pitch/(2*pi) + amp*p.max_amplitude/2 + p.end_margin + p.start_pos + p.offset_from_centerline
         if p.right_thread: phase = -phase
 
-        x = elevation
-        y = radius * phase
+        x = radius * phase
+        y = elevation
         z = p.R
         if elevation > p.L - p.end_margin:
             warnings.warn(f"Engraving stopped by end of cylinder.")
@@ -300,6 +301,49 @@ def amplitudes_to_gcode(amplitudes: np.ndarray, frame_rate: float) -> None:
     print(f"Number of passes: {len(passes_depth)} ({[round(d*1e3, 0) for d in passes_depth]} [um])")
     print(f"Total engraving length: {total_length:.3f} mm")
     print(f"Machining time: ~{total_length / p.feed_rate // 60:.0f}h{total_length / p.feed_rate % 60:.0f}min")
+
+def amplitudes_to_wire(amplitudes: np.ndarray, frame_rate: float) -> None:
+    """
+    Convert a series of sound amplitudes to a 3D wire for engraving on a cylinder.
+
+    The wire is generated based on the parameters defined in the `parameters.py` file.
+    The wire is then exported to a file.
+
+    Parameters
+    ----------
+    amplitudes : np.ndarray
+        Array of sound amplitudes.
+    frame_rate : float
+        Frame rate of the audio signal in Hz.
+
+    Returns
+    -------
+    None
+    """
+    path_points_cyl = []
+    path_points_plane = []
+    for i,amp in enumerate(amplitudes):
+        radius = p.R-p.depth
+        phase = (i) * p.speed_angular/frame_rate
+        elevation = phase*p.pitch/(2*pi) + amp*p.max_amplitude/2 + p.end_margin + p.start_pos + p.offset_from_centerline
+        if p.right_thread: phase = -phase
+
+        x = radius * phase
+        y = elevation
+        z = p.R
+        if elevation > p.L - p.end_margin:
+            warnings.warn(f"Engraving stopped by end of cylinder.")
+            break
+        else:
+            path_points_cyl.append(cyl2cart(radius, phase, elevation))
+            path_points_plane.append((x, y, z))
+
+    used_length = path_points_cyl[-1][-1] - p.start_pos - p.end_margin
+    print(f"Path contains {i+1}/{len(amplitudes)} points ({round((i+1)/len(amplitudes)*100,3)} %) from the audio segment.")
+    print(f"Engraving takes {round(used_length, 3)} mm, {round(used_length/(p.L - 2*p.end_margin)*100, 3)} % of the available space of the cylinder.")
+
+    builder3d.create_tip_path_wire(path_points_cyl, p.output_folder+p.output_filename+'_cyl.stp')
+    builder3d.create_tip_path_wire(path_points_plane, p.output_folder+p.output_filename+'_plane.stp')
 
 def check_intersection(pts: np.ndarray, frame_rate: float) -> int:
     """

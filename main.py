@@ -25,6 +25,8 @@ if __name__ == "__main__":
             a2e.amplitudes_to_disc_image(amplitudes, frame_rate)
         case (_, 'gcode'):
             a2e.amplitudes_to_gcode(amplitudes, frame_rate)
+        case (_, 'wire'):
+            a2e.amplitudes_to_wire(amplitudes, frame_rate)
         case _:
             raise ValueError(f"Unknown engraving output type: {p.ENGRAVING_OUTPUT_TYPE}. Please choose 'points' or 'image'.")
 
