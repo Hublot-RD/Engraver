@@ -13,7 +13,7 @@ class ParameterSet:
     L:                      float = attrs.field(default=125.0)  # Length of the cylinder [mm]
 
     # Engraving
-    ENGRAVING_OUTPUT_TYPE:  Literal['gcode', 'points', 'image'] = attrs.field(default='points')
+    ENGRAVING_OUTPUT_TYPE:  Literal['gcode', 'points', 'image', 'wire'] = attrs.field(default='wire')
     depth:                  float = attrs.field(default=0.045)  # Depth of the cut [mm]
     angle:                  float = attrs.field(default=90.0)  # Angle of the cut [°]
     width:                  float = attrs.field(init=False, default=None)  # Width of the cut [mm] - calculated, not initialized
