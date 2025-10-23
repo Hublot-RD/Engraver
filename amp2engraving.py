@@ -342,8 +342,8 @@ def amplitudes_to_wire(amplitudes: np.ndarray, frame_rate: float) -> None:
     print(f"Path contains {i+1}/{len(amplitudes)} points ({round((i+1)/len(amplitudes)*100,3)} %) from the audio segment.")
     print(f"Engraving takes {round(used_length, 3)} mm, {round(used_length/(p.L - 2*p.end_margin)*100, 3)} % of the available space of the cylinder.")
 
-    builder3d.create_tip_path_wire(path_points_cyl, p.output_folder+p.output_filename+'_cyl.stp')
-    builder3d.create_tip_path_wire(path_points_plane, p.output_folder+p.output_filename+'_plane.stp')
+    builder3d.create_tip_path_wire(path_points_cyl, p.output_folder+p.output_filename+'_cyl.stp', "STEP")
+    builder3d.create_tip_path_wire(path_points_plane, p.output_folder+p.output_filename+'_plane.dxf', "DXF")
 
 def check_intersection(pts: np.ndarray, frame_rate: float) -> int:
     """
