@@ -7,6 +7,7 @@ from PySide2.QtWidgets import QFileDialog
 
 # Global variables
 doc = None
+
 # Constants for the engraving
 TRI_HEIGHT = 0.2  # Height of the triangle [mm]
 TRI_ANGLE = math.pi / 2  # Angle of the tip [rad]
@@ -116,13 +117,14 @@ def engrave_once(file_path, loop_id):
 
     # Create path wire
     path_obj = create_tip_path(points)
+    path_obj.ViewObject.Visibility = False
     # path_obj = doc.addObject("Part::Feature", f"Loop_{loop_id}")
     # path_obj.Shape = path_wire
 
     # Create triangle profile
     # profile_obj = create_triangle_profile(points[-1], points[-2])
     # profile_obj = doc.addObject("Part::Feature", f"Triangle_{loop_id}")
-    # profile_obj.Shape = profile_wire
+    # profile_obj.Shape = profile_wirefile
 
     # # Create sweep
     # sweep_obj = doc.addObject("Part::Sweep", f"Sweep_{loop_id}")
@@ -176,7 +178,7 @@ def main():
     print("-"*10 + " Generating engraved cylinder " + "-"*10)
     
     # Create base cylinder
-    create_cylinder(CYL_RADIUS, CYL_LENGTH)
+    #create_cylinder(CYL_RADIUS, CYL_LENGTH)
     
     # Get folder with CSV files
     folder_path = select_folder()

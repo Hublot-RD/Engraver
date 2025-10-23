@@ -35,9 +35,9 @@ def amplitudes_to_cylinder_points(amplitudes: np.ndarray, frame_rate: float) -> 
         elevation = phase*p.pitch/(2*pi) + amp*p.max_amplitude/2 + p.end_margin + p.start_pos + p.offset_from_centerline
         if p.right_thread: phase = -phase
 
-        x = p.R
+        x = elevation
         y = radius * phase
-        z = elevation
+        z = p.R
         if elevation > p.L - p.end_margin:
             warnings.warn(f"Engraving stopped by end of cylinder.")
             break
@@ -51,7 +51,7 @@ def amplitudes_to_cylinder_points(amplitudes: np.ndarray, frame_rate: float) -> 
 
     # Create the engraved cylinder and wire
     exporter.export_path_to_csv(path_points_cyl, p.output_folder+p.output_filename+'_cyl', split_files=p.split_files, files_per_turn=p.files_per_turn, cyl_coord=True)
-    # exporter.export_path_to_csv(path_points_plane, p.output_folder+p.output_filename+'_plan', split_files=p.split_files, files_per_turn=p.files_per_turn, cyl_coord=False)
+    exporter.export_path_to_csv(path_points_plane, p.output_folder+p.output_filename+'_plan', split_files=p.split_files, files_per_turn=p.files_per_turn, cyl_coord=False)
 
 def amplitudes_to_disc_points(amplitudes: np.ndarray, frame_rate: float) -> None:
     """
