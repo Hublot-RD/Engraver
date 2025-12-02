@@ -74,11 +74,6 @@ def apply_low_pass_filter(amplitude_series: np.ndarray, frame_rate: float, cutof
     nyquist_rate = frame_rate / 2.0
     normal_cutoff = cutoff_freq / nyquist_rate
     b, a = signal.butter(5, normal_cutoff, btype='low', analog=False)
-
-    # Design a high-pass filter to remove low frequency sounds
-    # nyquist_rate_hp = frame_rate / 2.0
-    # normal_cutoff_hp = 100 / nyquist_rate_hp  # 100 Hz high-pass filter
-    # b_hp, a_hp = signal.butter(3, normal_cutoff_hp, btype='high', analog=False)
     
     # Apply the filter to the voltage series
     filtered_amplitude_series = signal.filtfilt(b, a, amplitude_series)
@@ -148,15 +143,27 @@ def match_target_amplitude(audio: AudioSegment, target_dBFS: float) -> AudioSegm
     change_in_dBFS = target_dBFS - audio.dBFS
     return audio.apply_gain(change_in_dBFS)
 
-def plot_amplitude_series(amplitude_series: np.ndarray, frame_rate: float) -> None:
+def plot_amplitude_series(amplitude_series: np.ndarray, frame_rate: float, displacement_series: np.ndarray = None) -> None:
     """
     Plot the amplitude series over time.
 
     :param amplitude_series: A numpy array of audio amplitude values.
     :param frame_rate: The frame rate of the audio.
+    :param displacement_series: (Optional) A numpy array of displacement values to plot alongside the amplitude series.
+    :return: None
     """
     time = np.arange(len(amplitude_series)) / frame_rate
     plt.figure(figsize=(12, 6))
+    if displacement_series is not None:
+        plt.subplot(2, 1, 2)
+        plt.plot(time, displacement_series, color='r')
+        plt.title('Displacement vs Time')
+        plt.xlabel('Time [s]')
+        plt.ylabel('Displacement')
+        plt.grid()
+        plt.tight_layout()
+        plt.subplot(2, 1, 1)
+
     plt.plot(time, amplitude_series, color='r', label='Audio signal')
     plt.ylim(-1.1, 1.1)
     plt.hlines([-1, 1], 0, time[-1], colors='black', linestyles='dashed', label='Max amplitude')
@@ -166,6 +173,39 @@ def plot_amplitude_series(amplitude_series: np.ndarray, frame_rate: float) -> No
     plt.legend()
     plt.grid()
     plt.show()
+
+def acceleration_to_displacement(amplitudes: np.ndarray, frame_rate: float, filter_active: bool = True, cutoff_freq: float = 5.0) -> np.ndarray:
+    """
+    Integrate the amplitudes to get the displacement signal.
+
+    The amplitudes represent the air pressure desired, which is proportionnal to the acceleration of the membrane.
+    
+    :param amplitudes: Array of amplitude values.
+    :param frame_rate: Frame rate of the audio signal.
+    :param filter_active: Whether to apply a high-pass filter to the displacement signal.
+    :param cutoff_freq: Cutoff frequency for the high-pass filter [Hz].
+    :return: displacement
+    """
+    # Remove DC offset
+    amplitudes = amplitudes - np.mean(amplitudes)
+
+    dt = 1.0 / frame_rate
+    velocity = np.cumsum(amplitudes) * dt
+    displacement = np.cumsum(velocity) * dt
+
+    if filter_active:
+        # apply a high-pass filter to remove low-frequency drift in displacement
+        nyquist_rate = frame_rate / 2.0
+        normal_cutoff = cutoff_freq / nyquist_rate
+        b, a = signal.butter(3, normal_cutoff, btype='high', analog=False)
+        displacement = signal.filtfilt(b, a, displacement)
+    
+    # Scale displacement to fit within [-1, 1]
+    max_disp = np.max(np.abs(displacement))
+    if max_disp > 0:
+        displacement = displacement / max_disp
+
+    return displacement
 
 
 # Example usage
@@ -178,10 +218,17 @@ if __name__ == "__main__":
     amplitudes, frame_rate, sample_width, num_channels = mp3_to_amplitude_series(path+input_file, channels='left', start_time=0, target_volume=-18.0)
     amplitudes_filtered, frame_rate = apply_low_pass_filter(amplitudes, frame_rate, cutoff_freq=cutoff_freq)
 
+    # Convert amplitudes to displacement
+    displacements = acceleration_to_displacement(amplitudes_filtered, frame_rate, filter_active=True, cutoff_freq=5.0)
+
     # Plot the amplitude series
-    plot_amplitude_series(amplitudes, frame_rate)
+    plot_amplitude_series(amplitudes, frame_rate, displacements)
     
     # Export the filtered signal to an MP3 file
     output_file = path + 'filtered/' + input_file.split('.')[0] + f'_filtered_{int(cutoff_freq)}Hz.mp3'
     export_to_mp3(amplitudes_filtered, frame_rate, sample_width, num_channels, output_file)
+    
+    # Export the displacement signal to an MP3 file
+    output_file = path + 'filtered/' + input_file.split('.')[0] + f'_displacement_{int(cutoff_freq)}Hz.mp3'
+    export_to_mp3(displacements, frame_rate, sample_width, num_channels, output_file)
 
