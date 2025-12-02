@@ -74,9 +74,15 @@ def apply_low_pass_filter(amplitude_series: np.ndarray, frame_rate: float, cutof
     nyquist_rate = frame_rate / 2.0
     normal_cutoff = cutoff_freq / nyquist_rate
     b, a = signal.butter(5, normal_cutoff, btype='low', analog=False)
+
+    # Design a high-pass filter to remove low frequency sounds
+    # nyquist_rate_hp = frame_rate / 2.0
+    # normal_cutoff_hp = 100 / nyquist_rate_hp  # 100 Hz high-pass filter
+    # b_hp, a_hp = signal.butter(3, normal_cutoff_hp, btype='high', analog=False)
     
     # Apply the filter to the voltage series
     filtered_amplitude_series = signal.filtfilt(b, a, amplitude_series)
+    # filtered_amplitude_series = signal.filtfilt(b_hp, a_hp, filtered_amplitude_series)
 
     if downsample:
         # Resample at 2*cutoff frequency
@@ -87,6 +93,7 @@ def apply_low_pass_filter(amplitude_series: np.ndarray, frame_rate: float, cutof
         new_frame_rate = frame_rate
 
     return filtered_amplitude_series, new_frame_rate
+
 
 def export_to_mp3(amplitude_series: np.ndarray, frame_rate: float, sample_width: float, num_channels: int, output_file_path: str) -> None:
     """
@@ -164,7 +171,7 @@ def plot_amplitude_series(amplitude_series: np.ndarray, frame_rate: float) -> No
 # Example usage
 if __name__ == "__main__":
     path = './audio_files/'
-    input_file = 'scale_cdef.mp3'
+    input_file = 'DJSaphir.mp3'
     cutoff_freq = 3000 # Hz
 
     # Convert mp3 to filtered amplitude signal
