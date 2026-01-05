@@ -8,10 +8,10 @@ if __name__ == "__main__":
     # Extract amplitudes from audio
     amplitudes, frame_rate, *_ = ap.mp3_to_amplitude_series(p.input_folder+p.input_filename, channels='left', start_time=p.start_time, duration=p.duration, target_volume=p.target_volume)
     if p.filter_active:
-        amplitudes, frame_rate = ap.apply_low_pass_filter(amplitudes, frame_rate, cutoff_freq=p.cutoff_freq, downsample=True)
-    displacement = ap.acceleration_to_displacement(amplitudes, frame_rate)
-    ap.plot_amplitude_series(amplitudes, frame_rate, displacement)
-    amplitudes = displacement
+        amplitudes, frame_rate = ap.apply_low_pass_filter(amplitudes, frame_rate, cutoff_freq=p.cutoff_freq_high, downsample=True)
+    # displacement = ap.acceleration_to_displacement(amplitudes, frame_rate, cutoff_freq=p.cutoff_freq_low)
+    ap.plot_amplitude_series(amplitudes, frame_rate)#, displacement)
+    # amplitudes = displacement
 
     amplitudes = ap.add_silent_start(amplitudes, frame_rate, duration=p.silent_start_duration)
 

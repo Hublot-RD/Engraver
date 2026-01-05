@@ -182,9 +182,9 @@ def acceleration_to_displacement(amplitudes: np.ndarray, frame_rate: float, filt
     
     :param amplitudes: Array of amplitude values.
     :param frame_rate: Frame rate of the audio signal.
-    :param filter_active: Whether to apply a high-pass filter to the displacement signal.
-    :param cutoff_freq: Cutoff frequency for the high-pass filter [Hz].
-    :return: displacement
+    :param filter_active: Whether to apply a high-pass filter to the displacement signal. Default is True.
+    :param cutoff_freq: Cutoff frequency for the high-pass filter [Hz]. Default is 5.0 Hz.
+    :return: displacement normalized to [-1, 1].
     """
     # Remove DC offset
     amplitudes = amplitudes - np.mean(amplitudes)
@@ -212,23 +212,23 @@ def acceleration_to_displacement(amplitudes: np.ndarray, frame_rate: float, filt
 if __name__ == "__main__":
     path = './audio_files/'
     input_file = 'DJSaphir.mp3'
-    cutoff_freq = 3000 # Hz
+    cutoff_freq_high = 3000 # Hz
+    cutoff_freq_low = 5.0 # Hz
 
     # Convert mp3 to filtered amplitude signal
-    amplitudes, frame_rate, sample_width, num_channels = mp3_to_amplitude_series(path+input_file, channels='left', start_time=0, target_volume=-18.0)
-    amplitudes_filtered, frame_rate = apply_low_pass_filter(amplitudes, frame_rate, cutoff_freq=cutoff_freq)
-
+    amplitudes, frame_rate, sample_width, num_channels = mp3_to_amplitude_series(path+input_file, channels='left', start_time=0, target_volume=-18.0, duration=28.5)
+    amplitudes_filtered, frame_rate = apply_low_pass_filter(amplitudes, frame_rate, cutoff_freq=cutoff_freq_high)
     # Convert amplitudes to displacement
-    displacements = acceleration_to_displacement(amplitudes_filtered, frame_rate, filter_active=True, cutoff_freq=5.0)
+    displacements = acceleration_to_displacement(amplitudes_filtered, frame_rate, filter_active=True, cutoff_freq=cutoff_freq_low)
 
     # Plot the amplitude series
     plot_amplitude_series(amplitudes, frame_rate, displacements)
     
     # Export the filtered signal to an MP3 file
-    output_file = path + 'filtered/' + input_file.split('.')[0] + f'_filtered_{int(cutoff_freq)}Hz.mp3'
+    output_file = path + 'filtered/' + input_file.split('.')[0] + f'_filtered_{int(cutoff_freq_high)}Hz.mp3'
     export_to_mp3(amplitudes_filtered, frame_rate, sample_width, num_channels, output_file)
     
     # Export the displacement signal to an MP3 file
-    output_file = path + 'filtered/' + input_file.split('.')[0] + f'_displacement_{int(cutoff_freq)}Hz.mp3'
+    output_file = path + 'filtered/' + input_file.split('.')[0] + f'_displacement_{int(cutoff_freq_low)}Hz.mp3'
     export_to_mp3(displacements, frame_rate, sample_width, num_channels, output_file)
 

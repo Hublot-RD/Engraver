@@ -46,7 +46,7 @@ def amplitudes_to_cylinder_points(amplitudes: np.ndarray, frame_rate: float) -> 
             path_points_cyl.append((radius, phase, elevation))
             path_points_plane.append((x, y, z))
 
-    used_length = path_points_cyl[-1][-1] - p.start_pos - p.end_margin
+    used_length = path_points_cyl[-1][-1] - p.start_pos - 2*p.end_margin
     print(f"Path contains {i+1}/{len(amplitudes)} points ({round((i+1)/len(amplitudes)*100,3)} %) from the audio segment.")
     print(f"Engraving takes {round(used_length, 3)} mm, {round(used_length/(p.L - 2*p.end_margin)*100, 3)} % of the available space of the cylinder.")
 
@@ -270,12 +270,15 @@ def amplitudes_to_gcode(amplitudes: np.ndarray, frame_rate: float) -> None:
             warnings.warn(f"Engraving stopped by end of cylinder.")
             break
         else:
-            line = f"\nX{round(elevation, 3)}A{round(np.rad2deg(phase), 3)}"
+            # Create g-code line
+            angle = np.rad2deg(phase) % 360
+            if p.right_thread and angle > 0: angle -= 360
+            line = f"\nX{round(elevation, 3)}A{round(angle, 3)}"
             gcode_one_pass += line
             length_one_pass += dl
             if i == 0:
                 x0 = round(elevation, 3)
-                a0 = round(np.rad2deg(phase), 3)
+                a0 = round(angle, 3)
 
     check_intersection(np.array(points), frame_rate)
 
@@ -298,8 +301,10 @@ def amplitudes_to_gcode(amplitudes: np.ndarray, frame_rate: float) -> None:
 
     # Export G-code to a file
     exporter.export_text_to_gcode(text, x0, a0)
+    used_length = points[-1][1] - p.start_pos - 2*p.end_margin
     print(f"Number of passes: {len(passes_depth)} ({[round(d*1e3, 0) for d in passes_depth]} [um])")
     print(f"Total engraving length: {total_length:.3f} mm")
+    print(f"Engraving takes {round(used_length, 3)} mm, {round(used_length/(p.L - 2*p.end_margin)*100, 3)} % of the available space of the cylinder.")
     print(f"Machining time: ~{total_length / p.feed_rate // 60:.0f}h{total_length / p.feed_rate % 60:.0f}min")
 
 def amplitudes_to_wire(amplitudes: np.ndarray, frame_rate: float) -> None:
@@ -338,7 +343,7 @@ def amplitudes_to_wire(amplitudes: np.ndarray, frame_rate: float) -> None:
             path_points_cyl.append(cyl2cart(radius, phase, elevation))
             path_points_plane.append((x, y, z))
 
-    used_length = path_points_cyl[-1][-1] - p.start_pos - p.end_margin
+    used_length = path_points_cyl[-1][-1] - p.start_pos - 2*p.end_margin
     print(f"Path contains {i+1}/{len(amplitudes)} points ({round((i+1)/len(amplitudes)*100,3)} %) from the audio segment.")
     print(f"Engraving takes {round(used_length, 3)} mm, {round(used_length/(p.L - 2*p.end_margin)*100, 3)} % of the available space of the cylinder.")
 
