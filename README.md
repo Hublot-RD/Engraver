@@ -31,12 +31,15 @@ The software is organized into multiple files to improve readability. They are:
 
 ## Current version: G-code creator
 
-The current state of the project can generate G-codes for the TRIDENT TR 60A. The python script reads an audio file and extracts an amplitude time series. It is then converted into a helical path that the engraving tip must follow. This path is exported as a G-code file (or multiple to respect the size limit) that is ready to use on the machine.
+_This method is used to prototype quickly with the in-house machine._
+
+The project can generate G-codes for the TRIDENT TR 60A. The python script reads an audio file and extracts an amplitude time series. It is then converted into a helical path that the engraving tip must follow. This path is exported as a G-code file that is ready to use on the machine. 
 
 ## Current version: Wire creator
 
-The project can also generate a STEP and a DXF file representing the engraving path. There is no volume information, making generation fast and files "light". We are working with suppliers to see if this option is ok for them.
+_This method is used to order engraved cylinders to external suppliers._
 
+The project can generate a STEP and a DXF file representing the engraving path in a spiral and unrolled respectively. The same pipeline as the G-code creator is used to map the mp3 file into an engraving path. The files containt no volumic information, making generation fast and files "light". 
 
 # Legacy documentation
 Many features included in the code are not relevant for the final use, as the engraving technique has changed multiple times. Here is some information about those topics.
